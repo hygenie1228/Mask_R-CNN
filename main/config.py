@@ -5,7 +5,22 @@ class Config:
     # path config
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.join(cur_dir, '..')
-    model_path = os.path.join(root_dir, 'checkpoint.pth')
+    
+    # training parameter
+    model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint.pth')
+    save_checkpoint = True
+    load_checkpoint = True
+    visualize = True
+
+    batch_size = 1
+    num_worker = 1
+    shuffle = False
+    epoch = 1001
+    is_train = 'train'
+    lr = 0.01
+    weight_decay = 0.0001
+    momentum = 0.9
+    smooth_l1_beta = 1.0 
 
     # datasets
     train_datasets = ['COCOKeypoint']
@@ -17,7 +32,7 @@ class Config:
     min_size = 800
     max_size = 1333
     pad_unit = 32
-    
+
     # FPN
     resnet_pretrained = True
     fpn_pretrained = False
@@ -33,21 +48,8 @@ class Config:
     post_nms_topk_test = 2000
     negative_anchor_threshold = 0.3
     positive_anchor_threshold = 0.7
-    positive_ratio = 0.5
+    positive_ratio = 0.3
     nms_threshold = 0.7
-
-    # training parameter
-    checkpoint = False
-    batch_size = 1
-    num_worker = 1
-    shuffle = False
-    epoch = 1000
-    is_train = 'train'
-    visualize = True
-    lr = 0.0005
-    weight_decay = 0.0001
-    momentum = 0.9
-    smooth_l1_beta = 0.5
 
     def set_args(self, gpu):
         self.gpu = gpu

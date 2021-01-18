@@ -389,7 +389,7 @@ Updates per week.
 - TODO  
   1) remove non human class image       - OK!
   2) construct loss function            - OK!
-  3) implement region proposal (test)
+  3) implement region proposal (test)   - OK!
   4) set batch size = 2
 
 
@@ -399,3 +399,13 @@ Updates per week.
 * **Model save/load function**    
   
 * **Separate anchor function part**  
+
+* **Pre NMS function**
+
+* **Box validation check function**
+
+* **Post NMS function**
+
+* **delta 부분은 학습이 잘 이루어지는 것을 확인할 수 있었는데, score 부분이 학습이 잘 이루어지지 않음**
+  -> gt labeling 부분을 다시 debugging 해야할 듯함
+

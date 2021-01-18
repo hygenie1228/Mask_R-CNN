@@ -15,7 +15,7 @@ def visualize_anchors(img, anchors, output_path):
     img = img.cpu().numpy().transpose(1, 2, 0)
     cv2.imwrite(output_path, img)
     img = cv2.imread(output_path)
-
+        
     img = Box.visualize_box(img, anchors, color=(255, 255, 255), thickness=1)
     cv2.imwrite(output_path, img)
 

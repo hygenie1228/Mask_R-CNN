@@ -3,6 +3,7 @@ import torch.nn.functional as F
 import math
 import numpy as np
 from torch import nn
+from torchvision import ops
 
 from config import cfg
 from utils.func import Box
@@ -34,7 +35,11 @@ class RPN(nn.Module):
         # predict proposal coordinate
         self.anchor_deltas = nn.Conv2d(256, 4*len(cfg.anchor_ratios), 1, stride=1)
 
+        self.img = None
+
     def forward(self, x, img, gt_data):
+        self.img = img[0]
+
         # generate anchors
         total_anchors = self.anchor_generator.get_anchors(x)
         
@@ -52,9 +57,9 @@ class RPN(nn.Module):
             # loss function
             cls_loss, loc_loss = self.loss(anchors, gt_boxes, pred_scores, pred_deltas, anchor_labels, match_gt_idxs)
         
-        self.get_proposals(total_anchors, pred_scores, pred_deltas)
+        self.get_proposals(total_anchors, pred_scores, pred_deltas, img)
 
-
+        
         # visualize anchors
         if cfg.visualize & self.training:
             #idxs = torch.randperm(len(anchors))[:1000]
@@ -64,7 +69,7 @@ class RPN(nn.Module):
             pos_anchors = anchors[idxs]
             idxs = torch.where(anchor_labels == 0)[0]
             neg_anchors = anchors[idxs]
-            visualize_labeled_anchors(img[0], gt_data['bboxs'], pos_anchors, neg_anchors, './outputs/labeled_anchor_image.jpg')
+            visualize_labeled_anchors(self.img, gt_data['bboxs'], pos_anchors, neg_anchors, './outputs/labeled_anchor_image.jpg')
 
         return cls_loss, loc_loss
 
@@ -91,12 +96,12 @@ class RPN(nn.Module):
 
         bs, _, h, w = pred_scores.shape
 
-        pred_scores = pred_scores.view(bs, 2, -1)   # [bs, 2, 3*h*w]
+        pred_scores = pred_scores.reshape(bs, 2, -1)   # [bs, 2, 3*h*w]
         pred_scores = F.softmax(pred_scores, 1)     # [bs, 2, 3*h*w]
-        pred_deltas = pred_deltas.view(bs, 4, -1)   # [bs, 4, 3*h*w]          
+        pred_deltas = pred_deltas.reshape(bs, 4, -1)   # [bs, 4, 3*h*w]          
 
-        pred_scores = pred_scores.permute(0, 2, 1)  # [bs, h*w, 2]
-        pred_deltas = pred_deltas.permute(0, 2, 1)  # [bs, h*w, 4]
+        pred_scores = pred_scores.permute(0, 2, 1)  # [bs, 3*h*w, 2]
+        pred_deltas = pred_deltas.permute(0, 2, 1)  # [bs, 3*h*w, 4]
 
         return pred_scores, pred_deltas
 
@@ -114,10 +119,35 @@ class RPN(nn.Module):
         gt_delta = Box.pos_to_delta(match_gt_boxes, pos_anchors)    #target
         pos_deltas = pred_deltas[idxs]              # pred
         
+        '''
+        if cfg.visualize:
+            pos_proposal = Box.delta_to_pos(pos_anchors, pos_deltas)
+            visualize_labeled_anchors(self.img, match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_anchor_image.jpg')
+        '''
+        
         # scores
         idxs = torch.where(anchor_labels >= 0)[0]
         gt_labels = anchor_labels[idxs]             # target
         mask_scores = pred_scores[idxs]             # pred
+        
+        '''
+        idxs = torch.where(anchor_labels == 1)[0]
+        aaa = pred_scores[idxs, 1]
+        idxs = torch.where(anchor_labels == 0)[0]
+        bbb = pred_scores[idxs, 1]
+        print(aaa)
+        print(bbb)
+
+        scores, idx = pred_scores[:, 1].sort(descending=True)
+        scores, topk_idx = scores[:150], idx[:150]
+
+        d_delta = pred_deltas[topk_idx]
+        d_anchors = anchors[topk_idx]
+        if cfg.visualize:
+            pos_proposal = Box.delta_to_pos(d_anchors, d_delta)
+            visualize_labeled_anchors(self.img, match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_score_image.jpg')
+        '''
+
 
         cls_loss = F.cross_entropy(mask_scores, gt_labels.long(), ignore_index=-1)
         cls_loss = cls_loss / len(gt_labels)
@@ -137,28 +167,50 @@ class RPN(nn.Module):
         loss_box = loss_box.view(-1).sum(0) / N
         return loss_box
 
-    def get_proposals(self, total_anchors, pred_scores, pred_deltas):
+    def get_proposals(self, total_anchors, pred_scores, pred_deltas, img):
+        img_size = (img.shape[2], img.shape[3])
+
         pred_proposals = []
+        proposal_scores = []
 
         for scores, deltas, anchors in zip(pred_scores, pred_deltas, total_anchors):
             scores = scores[:,1]
 
             # pre nms topk
             K = min(self.pre_nms_topk, len(scores))
-
             scores, idx = scores.sort(descending=True)
             scores, topk_idx = scores[:K], idx[:K]
 
+            # get proposals
             topk_deltas = deltas[topk_idx]
             topk_anchors = anchors[topk_idx]
             proposals = Box.delta_to_pos(topk_anchors, topk_deltas)
-            
-            print(proposals.shape)
-            print(scores.shape)
 
-            #proposals = Box.delta_to_pos(anchors, deltas)
-            #pred_proposals.append(proposals)
+            pred_proposals.append(proposals)
+            proposal_scores.append(scores)
+        
+        pred_proposals = torch.cat(pred_proposals, dim=0)
+        proposal_scores = torch.cat(proposal_scores, dim=0)
+
+        # valid check
+        proposal_scores, pred_proposals = Box.box_valid_check(proposal_scores, pred_proposals, img_size)
+
+        # post nms topk
+        topk_idx = ops.nms(pred_proposals, proposal_scores, self.nms_threshold)
+        topk_idx = topk_idx[:self.post_nms_topk]
+        
+        proposal_scores = proposal_scores[topk_idx]
+        pred_proposals = pred_proposals[topk_idx]
+        print(pred_proposals.shape)
+
+        print(proposal_scores[:100])
+            
+        if cfg.visualize:
+            visualize_anchors(self.img, pred_proposals[:100], './outputs/proposal_image.jpg')
         
 
-
-
+        #proposal_scores, idx = proposal_scores.sort(descending=True)
+        #topk_idx = idx[: 200]
+        
+        
+        

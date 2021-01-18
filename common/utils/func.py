@@ -65,27 +65,27 @@ class Box:
     
     def pos_to_delta(box1, box2):
         # gt_box
-        box1_h = box1[:, 2] - box1[:, 0]
-        box1_w = box1[:, 3] - box1[:, 1]
-        box1_ctr_y = box1[:, 0] + 0.5 * box1_h
-        box1_ctr_x = box1[:, 1] + 0.5 * box1_w
+        box1_w = box1[:, 2] - box1[:, 0]
+        box1_h = box1[:, 3] - box1[:, 1]
+        box1_ctr_x = box1[:, 0] + 0.5 * box1_w
+        box1_ctr_y = box1[:, 1] + 0.5 * box1_h
 
         # anchor
-        box2_h = box2[:, 2] - box2[:, 0]
-        box2_w = box2[:, 3] - box2[:, 1]
-        box2_ctr_y = box2[:, 0] + 0.5 * box2_h
-        box2_ctr_x = box2[:, 1] + 0.5 * box2_w        
+        box2_w = box2[:, 2] - box2[:, 0]
+        box2_h = box2[:, 3] - box2[:, 1]
+        box2_ctr_x = box2[:, 0] + 0.5 * box2_w
+        box2_ctr_y = box2[:, 1] + 0.5 * box2_h        
 
-        dy = (box1_ctr_y - box2_ctr_y) / box2_h
         dx = (box1_ctr_x - box2_ctr_x) / box2_w
-        dh = torch.log(box1_h / box2_h)
+        dy = (box1_ctr_y - box2_ctr_y) / box2_h
         dw = torch.log(box1_w / box2_w)
+        dh = torch.log(box1_h / box2_h)
 
         return torch.stack((dx, dy, dw, dh), dim=1)
 
 
     def delta_to_pos(boxes, delta):
-        # gt box
+        # anchor
         box_w = boxes[:, 2] - boxes[:, 0]
         box_h = boxes[:, 3] - boxes[:, 1]
         box_x = boxes[:, 0] + 0.5 * box_w
@@ -102,14 +102,43 @@ class Box:
         pred_w = torch.exp(dw) * box_w
         pred_h = torch.exp(dh) * box_h
 
-        # return to (x0, x1, y0, y1) type
-        pred_boxes = torch.zeros(delta.shape)
-        pred_boxes[:, 0] = pred_x - 0.5 * pred_w 
-        pred_boxes[:, 1] = pred_y - 0.5 * pred_h
-        pred_boxes[:, 2] = pred_x + 0.5 * pred_w
-        pred_boxes[:, 3] = pred_y + 0.5 * pred_h
+        pos_x1 = pred_x - 0.5 * pred_w 
+        pos_y1 = pred_y - 0.5 * pred_h
+        pos_x2 = pred_x + 0.5 * pred_w
+        pos_y2 = pred_y + 0.5 * pred_h
 
-        return pred_boxes
+        return torch.stack((pos_x1, pos_y1, pos_x2, pos_y2), dim=1)
+
+    def box_valid_check(scores, boxes, img_size):
+        # finite check
+        mask = torch.isfinite(boxes).all(dim=1) & torch.isfinite(scores)
+        boxes = boxes[mask]
+        scores = scores[mask]
+
+        H, W = img_size
+        # removal
+        idxs = torch.where((boxes[:, 0] >= 0) & (boxes[:, 0] <= W))[0]
+        scores, boxes = scores[idxs], boxes[idxs]
+        idxs = torch.where((boxes[:, 1] >= 0) & (boxes[:, 1] <= H))[0]
+        scores, boxes = scores[idxs], boxes[idxs]
+        idxs = torch.where((boxes[:, 2] >= 0) & (boxes[:, 2] <= W))[0]
+        scores, boxes = scores[idxs], boxes[idxs]
+        idxs = torch.where((boxes[:, 3] >= 0) & (boxes[:, 3] <= H))[0]
+        scores, boxes = scores[idxs], boxes[idxs]
+
+        # clamp
+        '''     
+        boxes[:, 0].clamp_(min=0, max=W)
+        boxes[:, 1].clamp_(min=0, max=H)
+        boxes[:, 2].clamp_(min=0, max=W)
+        boxes[:, 3].clamp_(min=0, max=H)
+        '''
+        
+        # area check
+        mask = ((boxes[:, 2] - boxes[:, 0]) > 0) & ((boxes[:, 3] - boxes[:, 1]) > 0)
+        scores, boxes = scores[mask], boxes[mask]
+
+        return scores, boxes
 
 class Keypoint:
     def to_array(keypoints):

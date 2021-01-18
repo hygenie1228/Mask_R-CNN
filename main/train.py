@@ -26,7 +26,7 @@ def main():
     # set trainer
     trainer = Trainer()
     trainer.build_dataloader()
-    if cfg.checkpoint:
+    if cfg.load_checkpoint:
         start_epoch = trainer.load_model()
     else :
         trainer.build_model()
@@ -64,7 +64,8 @@ def main():
 
                 gt_img = data[0]['raw_image']
                 visualize_input_image(gt_img, raw_gt_data, './outputs/gt_image.jpg')
-        if epoch % 50 == 0:
+
+        if cfg.save_checkpoint & (epoch % 50 == 0):
             trainer.save_model(epoch)
 
 if __name__ == "__main__":
