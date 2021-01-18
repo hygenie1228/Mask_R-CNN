@@ -406,6 +406,7 @@ Updates per week.
 
 * **Post NMS function**
 
-* **delta 부분은 학습이 잘 이루어지는 것을 확인할 수 있었는데, score 부분이 학습이 잘 이루어지지 않음**
-  -> gt labeling 부분을 다시 debugging 해야할 듯함
+* **delta 부분은 학습이 잘 이루어지는 것을 확인할 수 있었는데, score 부분이 학습이 잘 이루어지지 않음**  
 
+  -> gt labeling 부분을 다시 debugging 해야할 듯함
+  -> 분명 negative anchor로 score를 0으로 학습되어야 하는 부분인데 score가 1에 가깝게 학습이 되고 있음
