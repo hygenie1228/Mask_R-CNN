@@ -7,6 +7,7 @@ from config import cfg
 from base import Trainer
 from utils.visualize import visualize_input_image, visualize_labeled_anchors
 import time
+from torch.utils.tensorboard import SummaryWriter
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -34,6 +35,7 @@ def main():
         start_epoch = 0
     
     start_time = time.time()
+    writer = SummaryWriter('../runs')
 
     cls_losses = 0
     loc_losses = 0
@@ -52,11 +54,15 @@ def main():
             
             cls_losses = cls_losses + cls_loss
             loc_losses = loc_losses + loc_loss
-            #if i % 50 == 49:
-            print("Epoch: %d / Iter : %d / cls Loss : %f / loc Loss : %f / Time : %f "%(epoch, i, cls_losses, loc_losses, time.time() - start_time))
-            cls_losses = 0
-            loc_losses = 0
 
+            if i % 50 == 49:
+                writer.add_scalar('Train_Loss/cls_loss', cls_losses.item(), i)
+                writer.add_scalar('Train_Loss/loc_loss', loc_losses.item(), i)
+                print("Epoch: %d / Iter : %d / cls Loss : %f / loc Loss : %f / Time : %f "%(epoch, i, cls_losses, loc_losses, time.time() - start_time))
+                cls_losses = 0
+                loc_losses = 0
+
+            '''
             if cfg.visualize & (cfg.is_train != 'test') :  
                 img = data[0]['image']
                 img = img.numpy().transpose(1, 2, 0)
@@ -64,6 +70,7 @@ def main():
 
                 gt_img = data[0]['raw_image']
                 visualize_input_image(gt_img, raw_gt_data, './outputs/gt_image.jpg')
+            '''
 
         if cfg.save_checkpoint & (epoch % 50 == 0):
             trainer.save_model(epoch)

@@ -7,10 +7,12 @@ class Config:
     root_dir = os.path.join(cur_dir, '..')
     
     # training parameter
-    model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint.pth')
     save_checkpoint = True
-    load_checkpoint = True
-    visualize = True
+    save_model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint.pth')
+    load_checkpoint = False
+    load_model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint.pth')
+    visualize = False
+    use_entropy = True
 
     batch_size = 1
     num_worker = 1
@@ -47,8 +49,9 @@ class Config:
     post_nms_topk_train = 2000
     post_nms_topk_test = 2000
     negative_anchor_threshold = 0.3
-    positive_anchor_threshold = 0.7
-    positive_ratio = 0.3
+    positive_anchor_threshold = 0.6
+    num_sample = 256
+    positive_ratio = 0.5
     nms_threshold = 0.7
 
     def set_args(self, gpu):

@@ -13,6 +13,7 @@ class AnchorGenerator:
 
         self.positive_anchor_threshold = cfg.positive_anchor_threshold
         self.negative_anchor_threshold = cfg.negative_anchor_threshold
+        self.num_sample = cfg.num_sample
         self.positive_ratio = cfg.positive_ratio
 
         self.basic_anchors = self.generate_basic_anchors() 
@@ -77,7 +78,7 @@ class AnchorGenerator:
 
         return labels, match_gt_idxs
     
-    def sampling_anchors(self, labels):
+    def sampling_anchors_2(self, labels):
         pos_index = torch.where(labels == 1)[0]
         neg_index = torch.where(labels == 0)[0]
         sampling_pos_num = (len(pos_index) + len(neg_index)) * self.positive_ratio
@@ -97,6 +98,25 @@ class AnchorGenerator:
             rand_idx = torch.randperm(len(pos_index))[:sampling_pos_num]
             pos_index = pos_index[rand_idx]
     
+        # reassign label
+        labels = torch.empty(len(labels),).cuda().fill_(-1)
+        labels[pos_index] = 1
+        labels[neg_index] = 0
+
+        return labels
+
+    def sampling_anchors(self, labels):
+        pos_index = torch.where(labels == 1)[0]
+        neg_index = torch.where(labels == 0)[0]
+
+        sampling_pos_num = min(pos_index.numel(), int(self.num_sample * self.positive_ratio))
+        sampling_neg_num = min(neg_index.numel(), int(self.num_sample * (1 - self.positive_ratio)))
+
+        rand_idx = torch.randperm(pos_index.numel())[:sampling_pos_num]
+        pos_index = pos_index[rand_idx]
+        rand_idx = torch.randperm(neg_index.numel())[:sampling_neg_num]
+        neg_index = neg_index[rand_idx]
+
         # reassign label
         labels = torch.empty(len(labels),).cuda().fill_(-1)
         labels[pos_index] = 1

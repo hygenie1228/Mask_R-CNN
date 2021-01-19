@@ -23,6 +23,7 @@ class RPN(nn.Module):
             self.post_nms_topk = cfg.post_nms_topk_test
         
         self.nms_threshold = cfg.nms_threshold
+        self.anchor_samples = cfg.num_sample
 
         # anchors per one cell
         self.anchor_generator = AnchorGenerator()
@@ -31,7 +32,10 @@ class RPN(nn.Module):
         # 3x3 conv layer
         self.conv = nn.Conv2d(256, 256, 3, stride=1, padding=1)
         # predict objectness
-        self.objectness_logits = nn.Conv2d(256, 2*len(cfg.anchor_ratios), 1, stride=1)
+        if cfg.use_entropy:
+            self.objectness_logits = nn.Conv2d(256, 2*len(cfg.anchor_ratios), 1, stride=1)
+        else:
+            self.objectness_logits = nn.Conv2d(256, len(cfg.anchor_ratios), 1, stride=1)
         # predict proposal coordinate
         self.anchor_deltas = nn.Conv2d(256, 4*len(cfg.anchor_ratios), 1, stride=1)
 
@@ -65,6 +69,8 @@ class RPN(nn.Module):
             #idxs = torch.randperm(len(anchors))[:1000]
             #sample_anchors = anchors[idxs]
             #visualize_anchors(img[0], sample_anchors, './outputs/anchor_image.jpg')
+            #visualize_anchors(img[0], total_anchors[4][200:220], './outputs/anchor_image.jpg')
+
             idxs = torch.where(anchor_labels == 1)[0]
             pos_anchors = anchors[idxs]
             idxs = torch.where(anchor_labels == 0)[0]
@@ -90,14 +96,18 @@ class RPN(nn.Module):
         return pred_scores, pred_deltas
 
     def rpn_forward(self, x):
-        x = self.conv(x)
+        x = F.relu(self.conv(x))
         pred_scores = self.objectness_logits(x)     # [bs, 6, h, w]
         pred_deltas = self.anchor_deltas(x)         # [bs, 12, h, w]     
 
         bs, _, h, w = pred_scores.shape
+        
+        if cfg.use_entropy:
+            pred_scores = pred_scores.reshape(bs, 2, -1)   # [bs, 2, 3*h*w]
+            pred_scores = F.softmax(pred_scores, 1)        # [bs, 2, 3*h*w]
+        else:
+            pred_scores = pred_scores.reshape(bs, 1, -1)   # [bs, 2, 3*h*w]
 
-        pred_scores = pred_scores.reshape(bs, 2, -1)   # [bs, 2, 3*h*w]
-        pred_scores = F.softmax(pred_scores, 1)     # [bs, 2, 3*h*w]
         pred_deltas = pred_deltas.reshape(bs, 4, -1)   # [bs, 4, 3*h*w]          
 
         pred_scores = pred_scores.permute(0, 2, 1)  # [bs, 3*h*w, 2]
@@ -112,6 +122,8 @@ class RPN(nn.Module):
 
         # delta
         idxs = torch.where(anchor_labels == 1)[0]
+        #print("!!!")
+        #print(idxs)
         pos_anchors = anchors[idxs]                 # anchor
         match_gt_idxs = match_gt_idxs[idxs]         
         match_gt_boxes = gt_boxes[match_gt_idxs]    # gt box
@@ -119,41 +131,40 @@ class RPN(nn.Module):
         gt_delta = Box.pos_to_delta(match_gt_boxes, pos_anchors)    #target
         pos_deltas = pred_deltas[idxs]              # pred
         
-        '''
-        if cfg.visualize:
-            pos_proposal = Box.delta_to_pos(pos_anchors, pos_deltas)
-            visualize_labeled_anchors(self.img, match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_anchor_image.jpg')
-        '''
-        
         # scores
         idxs = torch.where(anchor_labels >= 0)[0]
         gt_labels = anchor_labels[idxs]             # target
         mask_scores = pred_scores[idxs]             # pred
-        
-        '''
-        idxs = torch.where(anchor_labels == 1)[0]
-        aaa = pred_scores[idxs, 1]
-        idxs = torch.where(anchor_labels == 0)[0]
-        bbb = pred_scores[idxs, 1]
-        print(aaa)
-        print(bbb)
 
+        # debugging...
+        d_scores, d_idx = pred_scores[:, 1].sort(descending=True)
+        d_scores, d_topk_idx = d_scores[:10], d_idx[:10]
+        d_topk_idx, _ = d_topk_idx.sort()
+        #print(d_topk_idx)
+
+        # debugging...
         scores, idx = pred_scores[:, 1].sort(descending=True)
-        scores, topk_idx = scores[:150], idx[:150]
+        scores, topk_idx = scores[:20], idx[:20]
 
         d_delta = pred_deltas[topk_idx]
         d_anchors = anchors[topk_idx]
+
+        pos_proposal = Box.delta_to_pos(d_anchors, d_delta)
+        visualize_labeled_anchors(self.img, match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_score_image.jpg')
+
         if cfg.visualize:
+            pos_proposal = Box.delta_to_pos(pos_anchors, pos_deltas)
+            visualize_labeled_anchors(self.img, match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_anchor_image.jpg')
+
             pos_proposal = Box.delta_to_pos(d_anchors, d_delta)
             visualize_labeled_anchors(self.img, match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_score_image.jpg')
-        '''
 
-
-        cls_loss = F.cross_entropy(mask_scores, gt_labels.long(), ignore_index=-1)
-        cls_loss = cls_loss / len(gt_labels)
+        #cls_loss = F.cross_entropy(pred_scores, anchor_labels.long(), ignore_index = -1)
+        cls_loss = F.cross_entropy(mask_scores, gt_labels.long(), ignore_index = -1)
+        cls_loss = cls_loss / self.anchor_samples
 
         loc_loss = self.smooth_l1_loss(pos_deltas, gt_delta, beta=cfg.smooth_l1_beta)
-        loc_loss = loc_loss / len(gt_delta)
+        loc_loss = loc_loss / self.anchor_samples
 
         return cls_loss, loc_loss
 
@@ -197,13 +208,15 @@ class RPN(nn.Module):
 
         # post nms topk
         topk_idx = ops.nms(pred_proposals, proposal_scores, self.nms_threshold)
-        topk_idx = topk_idx[:self.post_nms_topk]
+
+        K = min(self.post_nms_topk, len(topk_idx))
+        topk_idx = topk_idx[:K]
         
         proposal_scores = proposal_scores[topk_idx]
         pred_proposals = pred_proposals[topk_idx]
-        print(pred_proposals.shape)
+        #print(pred_proposals.shape)
 
-        print(proposal_scores[:100])
+        #print(proposal_scores[:100])
             
         if cfg.visualize:
             visualize_anchors(self.img, pred_proposals[:100], './outputs/proposal_image.jpg')

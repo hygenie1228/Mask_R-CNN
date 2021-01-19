@@ -408,5 +408,24 @@ Updates per week.
 
 * **delta 부분은 학습이 잘 이루어지는 것을 확인할 수 있었는데, score 부분이 학습이 잘 이루어지지 않음**  
 
-  -> gt labeling 부분을 다시 debugging 해야할 듯함
-  -> 분명 negative anchor로 score를 0으로 학습되어야 하는 부분인데 score가 1에 가깝게 학습이 되고 있음
+  -> gt labeling 부분을 다시 debugging 해야할 듯함  
+  -> 분명 negative anchor로 score를 0으로 학습되어야 하는 부분인데 score가 1에 가깝게 학습이 되고 있음  
+
+  -> detectron2 코드와 비교한 결과, relu function을 사용하지 않았음 : 그래도 잘 안됨
+
+
+  1개의 image로만 학습시켜도 여러 부분이 activation됨
+
+  <img src="./assets/log_6.jpg" width="25%" >
+
+  또한, 10개의 image로 학습시켰을 때, 아래처럼 작은 object에 대해 아예 추정못하는 것을 볼 수 있음
+
+  <img src="./assets/log_7.jpg" width="40%" >
+
+  -> FPN feature level과 anchor level이 matching되지 않았나?  : 문제 없음
+
+
+  무엇이 문제인가?    
+  detectron training 버전을 한번 넣어보자!  (0119)  
+  
+  
