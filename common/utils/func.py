@@ -62,6 +62,18 @@ class Box:
             img = cv2.line(img, pos3, pos4, color, thickness) 
 
         return img
+
+    def visualize_dot(img, boxs, color, thickness):
+        for box in boxs:
+            x_min = int(box[0])
+            y_min = int(box[1])
+            x_max = int(box[2])
+            y_max = int(box[3])
+            
+            pos = (int((x_min + x_max)/2), int((y_min + y_max)/2)) 
+            img = cv2.line(img, pos, pos, color, 7) 
+
+        return img
     
     def pos_to_delta(box1, box2):
         # gt_box
@@ -116,7 +128,15 @@ class Box:
         scores = scores[mask]
 
         H, W = img_size
+
+        # clamp 
+        boxes[:, 0].clamp_(min=0, max=W)
+        boxes[:, 1].clamp_(min=0, max=H)
+        boxes[:, 2].clamp_(min=0, max=W)
+        boxes[:, 3].clamp_(min=0, max=H)
+        
         # removal
+        '''
         idxs = torch.where((boxes[:, 0] >= 0) & (boxes[:, 0] <= W))[0]
         scores, boxes = scores[idxs], boxes[idxs]
         idxs = torch.where((boxes[:, 1] >= 0) & (boxes[:, 1] <= H))[0]
@@ -125,13 +145,6 @@ class Box:
         scores, boxes = scores[idxs], boxes[idxs]
         idxs = torch.where((boxes[:, 3] >= 0) & (boxes[:, 3] <= H))[0]
         scores, boxes = scores[idxs], boxes[idxs]
-
-        # clamp
-        '''     
-        boxes[:, 0].clamp_(min=0, max=W)
-        boxes[:, 1].clamp_(min=0, max=H)
-        boxes[:, 2].clamp_(min=0, max=W)
-        boxes[:, 3].clamp_(min=0, max=H)
         '''
         
         # area check

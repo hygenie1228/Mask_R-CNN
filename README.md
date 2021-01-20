@@ -426,6 +426,36 @@ Updates per week.
 
 
   무엇이 문제인가?    
-  detectron training 버전을 한번 넣어보자!  (0119)  
+  1) 1개의 image로 학습하지 말고 (overflow?) 전체로 1 epoch 돌려서 결과 확인해보자 (64115 images) (0119) 
+    -> 60k iter. 돌려도 제대로 된 결과가 나오지 않음 -> bug 존재한다는 거 확인
+  2) detectron training 버전을 한번 넣어보자!  (나중에 해보자) : bug 확인해서 지금 바로 할 필요가 없어짐
   
+
+* **Check losses - use Tensorboard**
+
+  <img src="./assets/log_8.jpg" width="50%" >
+
   
+* **Fix bugs**
+
+  Checked that there is a dimension matching error in RPN Network.  
+  Found out that his affected the above errors.
+
+  -> 오류 수정후 1 epoch 돌리니 어느 정도 학습 결과가 보임.
+
+  Top 100 proposals after 10k iters training.
+  <img src="./assets/log_9.jpg" width="40%" >
+
+  (0120) change loss functions : F.cross_entropy -> F.binary_cross_entropy_with_logits
+  (0120) 무조건 256 sample 뽑는 것에서, positive ratio를 유지하는 방법으로 변경
+
+
+-- Question  
+  1) how to set learning rate scheduler
+
+
+# Week3
+- TODO  
+  1) set batch size = 2
+  2) Implement ROI Align layer
+  3) training RPN network at various parameters

@@ -8,18 +8,17 @@ class Config:
     
     # training parameter
     save_checkpoint = True
-    save_model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint.pth')
+    save_model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint_10k_0120.pth')
     load_checkpoint = False
-    load_model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint.pth')
+    load_model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint_10000_epoch1_resample.pth')
     visualize = False
-    use_entropy = True
 
     batch_size = 1
     num_worker = 1
     shuffle = False
-    epoch = 1001
+    epoch = 1
     is_train = 'train'
-    lr = 0.01
+    lr = 0.005
     weight_decay = 0.0001
     momentum = 0.9
     smooth_l1_beta = 1.0 
@@ -49,7 +48,7 @@ class Config:
     post_nms_topk_train = 2000
     post_nms_topk_test = 2000
     negative_anchor_threshold = 0.3
-    positive_anchor_threshold = 0.6
+    positive_anchor_threshold = 0.7
     num_sample = 256
     positive_ratio = 0.5
     nms_threshold = 0.7

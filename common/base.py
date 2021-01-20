@@ -11,6 +11,7 @@ class Trainer:
         self.dataloader = None
         self.model = None
         self.optimizer = None
+        self.lr = None
 
     def build_dataloader(self):
         dataset = DatasetManager(cfg.train_datasets, train=cfg.is_train)
@@ -29,12 +30,28 @@ class Trainer:
         self.model.train()
         print(self.model)       
 
+    def set_lr(self, epoch):
+        if epoch == 0:
+            self.lr = cfg.lr
+        else: 
+            self.lr = cfg.lr * 0.1
+
     def set_optimizer(self):
         params = []
         for key, value in dict(self.model.named_parameters()).items():
             if value.requires_grad:
-                params += [{'params': [value],'lr': cfg.lr, 'weight_decay': cfg.weight_decay}]
+                params += [{'params': [value],'lr': self.lr, 'weight_decay': cfg.weight_decay}]
 
+        '''
+        params = []
+        for key, value in dict(self.model.named_parameters()).items():
+            if value.requires_grad:
+                if 'bias' in key:
+                    params += [{'params':[value],'lr':self.lr*(True + 1), \
+                            'weight_decay': False and 0.0005 or 0}]
+                else:
+                    params += [{'params':[value],'lr':self.lr, 'weight_decay': 0.0005}]
+        '''
         #self.optimizer = torch.optim.Adam(params)
         self.optimizer = torch.optim.SGD(params, momentum=cfg.momentum)
 
@@ -43,14 +60,15 @@ class Trainer:
             'epoch': epoch,
             'model_state_dict': self.model.state_dict(),
             'optimizer_state_dict': self.optimizer.state_dict()
-        }, cfg.model_path)
+        }, cfg.save_model_path)
+
 
     def load_model(self):
         self.build_model()
         self.set_optimizer()
 
-        checkpoint = torch.load(cfg.model_path)
+        checkpoint = torch.load(cfg.load_model_path)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
-        epoch = checkpoint['epoch']
+        epoch = checkpoint['epoch'] + 1
         return epoch
