@@ -9,6 +9,7 @@ from pycocotools.coco import COCO
 from pycocotools import mask
 
 from config import cfg
+from utils.func import Img
 from utils.func import Box
 from utils.func import Keypoint
 
@@ -85,11 +86,11 @@ class COCOKeypointDataset(Dataset):
         print(len(self.img_ids))
 
     def __len__(self):
-        return 10000
-        #return len(self.img_ids)
+        #return 10000
+        return len(self.img_ids)
 
     def __getitem__(self, index): 
-        #index = 1
+        index = 4
         img_id = self.img_ids[index]
         anns = self.annots[index]
         img_path = self.img_paths[index]
@@ -111,11 +112,11 @@ class COCOKeypointDataset(Dataset):
 
     def preprocessing(self, img, gt_data):
         # resize image
-        img, scales = self.resize_img(img)
+        img, scales = Img.resize_img(img, cfg.min_size, cfg.max_size)
         # normalize image
-        img = self.normalize_img(img)
+        img = Img.normalize_img(img, cfg.pixel_mean, cfg.pixel_std)
         # padding image
-        img = self.padding_img(img)
+        img = Img.padding_img(img, cfg.pad_unit)
 
         # recompose ground truth
         if self.is_train:
@@ -123,43 +124,3 @@ class COCOKeypointDataset(Dataset):
             gt_data['keypoints'] = Keypoint.scale_keypoint(gt_data['keypoints'], scales)
         return img, gt_data
     
-    def resize_img(self, img):
-        h, w, _ = img.shape
-        new_h, new_w = h, w
-
-        if new_h < new_w:
-            if new_h < cfg.min_size:
-                new_w = int(w * cfg.min_size / h)
-                new_h = cfg.min_size
-            if new_w > cfg.max_size:
-                new_h = int(new_h * cfg.max_size / new_w)
-                new_w = cfg.max_size
-        else:
-            if new_w < cfg.min_size:
-                new_h = int(h * cfg.min_size / w)
-                new_w = cfg.min_size
-            if new_h > cfg.max_size:
-                new_w = int(new_w * cfg.max_size / new_h)
-                new_h = cfg.max_size
-        
-        scale_h = new_h / h
-        scale_w = new_w / w
-        return cv2.resize(img, (new_w, new_h)), (scale_h, scale_w)
-
-    def normalize_img(self, img):
-        img = torch.as_tensor(img.astype("float32").transpose(2, 0, 1))
-        pixel_mean = torch.Tensor(cfg.pixel_mean).reshape(-1, 1, 1)
-        pixel_std = torch.Tensor(cfg.pixel_std).reshape(-1, 1, 1)
-        
-        return (img - pixel_mean) / pixel_std
-
-    def padding_img(self, img):
-        _, h, w = img.shape
-        
-        new_h = (h + (cfg.pad_unit - 1)) // cfg.pad_unit * cfg.pad_unit
-        new_w = (w + (cfg.pad_unit - 1)) // cfg.pad_unit * cfg.pad_unit
-        
-        padded_img = torch.zeros((3, new_h, new_w))
-        padded_img[:, :h, :w] = img
-
-        return padded_img

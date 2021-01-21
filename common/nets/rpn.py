@@ -134,11 +134,11 @@ class RPN(nn.Module):
         # delta loss function
         loc_loss = self.smooth_l1_loss(pos_deltas, gt_delta, beta=cfg.smooth_l1_beta)
 
-        cls_loss = cls_loss / len(gt_labels)
-        loc_loss = loc_loss / len(gt_delta)
+        #cls_loss = cls_loss / len(gt_labels)
+        #loc_loss = loc_loss / len(gt_delta)
 
-        #cls_loss = cls_loss / self.anchor_samples
-        #loc_loss = loc_loss / self.anchor_samples
+        cls_loss = cls_loss / self.anchor_samples
+        loc_loss = loc_loss / self.anchor_samples
 
         if cfg.visualize:
             # for visualize
@@ -201,4 +201,6 @@ class RPN(nn.Module):
         pred_proposals = pred_proposals[topk_idx]
             
         if cfg.visualize:
-            visualize_anchors(self.img, pred_proposals[:75], './outputs/proposal_image.jpg')
+            visualize_anchors(self.img, pred_proposals[:50], './outputs/proposal_image.jpg')
+        
+        #raise ValueError

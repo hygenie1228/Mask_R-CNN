@@ -78,7 +78,7 @@ class AnchorGenerator:
 
         return labels, match_gt_idxs
     
-    def sampling_anchors(self, labels):
+    def sampling_anchors_2(self, labels):
         pos_index = torch.where(labels == 1)[0]
         neg_index = torch.where(labels == 0)[0]
         sampling_pos_num = int(self.num_sample * self.positive_ratio)
@@ -105,7 +105,7 @@ class AnchorGenerator:
 
         return labels
 
-    def sampling_anchors_2(self, labels):
+    def sampling_anchors(self, labels):
         pos_index = torch.where(labels == 1)[0]
         neg_index = torch.where(labels == 0)[0]
 

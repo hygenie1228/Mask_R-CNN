@@ -416,7 +416,7 @@ Updates per week.
 
   1개의 image로만 학습시켜도 여러 부분이 activation됨
 
-  <img src="./assets/log_6.jpg" width="25%" >
+  <img src="./assets/log_6.jpg" width="40%" >
 
   또한, 10개의 image로 학습시켰을 때, 아래처럼 작은 object에 대해 아예 추정못하는 것을 볼 수 있음
 
@@ -443,15 +443,20 @@ Updates per week.
 
   -> 오류 수정후 1 epoch 돌리니 어느 정도 학습 결과가 보임.
 
-  Top 100 proposals after 10k iters training.
+  Top 100 proposals after 10k iters training.  
+
   <img src="./assets/log_9.jpg" width="40%" >
 
   (0120) change loss functions : F.cross_entropy -> F.binary_cross_entropy_with_logits
   (0120) 무조건 256 sample 뽑는 것에서, positive ratio를 유지하는 방법으로 변경
 
+  Top 50 proposals after 120k iters training. 
+
+  <img src="./assets/log_10.jpg" width="60%" >
 
 -- Question  
   1) how to set learning rate scheduler
+  2) how to debug network? debug priority?
 
 
 # Week3

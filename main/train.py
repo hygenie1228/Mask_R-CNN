@@ -43,7 +43,6 @@ def main():
         cls_losses = 0
         loc_losses = 0
         for i, data in enumerate(trainer.dataloader):   
-
             trainer.optimizer.zero_grad()
 
             cls_loss, loc_loss = trainer.model(data)
@@ -54,7 +53,7 @@ def main():
             
             cls_losses = cls_losses + cls_loss
             loc_losses = loc_losses + loc_loss
-            if i % 50 == 49:
+            if i % 100 == 99:
                 writer.add_scalar('Train_Loss/cls_loss', cls_losses.item(), epoch * len(trainer.dataloader) + i)
                 writer.add_scalar('Train_Loss/loc_loss', loc_losses.item(), epoch * len(trainer.dataloader) + i)
                 print("Epoch: %d / Iter : %d / cls Loss : %f / loc Loss : %f / Time : %f "%(epoch, i, cls_losses, loc_losses, time.time() - start_time))

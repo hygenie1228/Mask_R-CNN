@@ -2,6 +2,48 @@ import torch
 import cv2
 import numpy as np
 
+class Img:
+    def resize_img(img, min_size, max_size):
+        h, w, _ = img.shape
+        new_h, new_w = h, w
+
+        if new_h < new_w:
+            if new_h < min_size:
+                new_w = int(w * min_size / h)
+                new_h = min_size
+            if new_w > max_size:
+                new_h = int(new_h * max_size / new_w)
+                new_w = max_size
+        else:
+            if new_w < min_size:
+                new_h = int(h * min_size / w)
+                new_w = min_size
+            if new_h > max_size:
+                new_w = int(new_w * max_size / new_h)
+                new_h = max_size
+        
+        scale_h = new_h / h
+        scale_w = new_w / w
+        return cv2.resize(img, (new_w, new_h)), (scale_h, scale_w)
+
+    def normalize_img(img, pixel_mean, pixel_std):
+        img = torch.as_tensor(img.astype("float32").transpose(2, 0, 1))
+        pixel_mean = torch.Tensor(pixel_mean).reshape(-1, 1, 1)
+        pixel_std = torch.Tensor(pixel_std).reshape(-1, 1, 1)
+        
+        return (img - pixel_mean) / pixel_std
+
+    def padding_img(img, pad_unit):
+        _, h, w = img.shape
+        
+        new_h = (h + (pad_unit - 1)) // pad_unit * pad_unit
+        new_w = (w + (pad_unit - 1)) // pad_unit * pad_unit
+        
+        padded_img = torch.zeros((3, new_h, new_w))
+        padded_img[:, :h, :w] = img
+
+        return padded_img
+
 class Box:
     def xywh_to_xyxy(box):
         xmin = box[0]
@@ -134,7 +176,7 @@ class Box:
         boxes[:, 1].clamp_(min=0, max=H)
         boxes[:, 2].clamp_(min=0, max=W)
         boxes[:, 3].clamp_(min=0, max=H)
-        
+
         # removal
         '''
         idxs = torch.where((boxes[:, 0] >= 0) & (boxes[:, 0] <= W))[0]
