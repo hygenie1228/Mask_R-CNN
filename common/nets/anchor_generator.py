@@ -55,7 +55,44 @@ class AnchorGenerator:
 
     def labeling_anchors(self, anchors, gt_boxes):
         # anchors : [N, 4], format : x1y1x2y2
-        # gt_boxes : [M, 4], format : x1y1x2y2
+        # gt_boxes : [bs, M, 4], format : x1y1x2y2
+        
+        labels = torch.empty(len(gt_boxes), len(anchors)).cuda().fill_(-1)
+        match_gt_boxes = torch.empty(len(gt_boxes), len(anchors), 4).cuda().fill_(-1)
+        
+        for i, gt_box in enumerate(gt_boxes):
+            # get iou_matrix : [N, M]
+            iou_matrix  = Box.calculate_iou_matrix(anchors, gt_box)
+
+            # anchor labels
+            # 1 : positive anchor
+            # 0 : negative anchor
+            # -1 : don't care
+            max_ious, match_gt_idxs = torch.max(iou_matrix, dim=1)
+            gt_max_ious, _ = torch.max(iou_matrix, dim=0)
+            gt_argmax_ious = torch.where(iou_matrix == gt_max_ious)[0]
+
+            # assign negative anchor
+            labels[i, max_ious < self.negative_anchor_threshold] = 0
+
+            # assign positive anchor
+            labels[i, max_ious >= self.positive_anchor_threshold] = 1
+            labels[i, gt_argmax_ious] = 1
+            
+            # match gt boxes
+            match_gt_boxes[i] = gt_box[match_gt_idxs.long()]
+        
+        return labels, match_gt_boxes
+
+    def labeling_anchors_2(self, anchors, gt_boxes):
+        # anchors : [N, 4], format : x1y1x2y2
+        # gt_boxes : [bs, M, 4], format : x1y1x2y2
+        
+        bs = len(gt_boxes)
+        gt_boxes = gt_boxes[0]
+        
+        new_labels = torch.empty(bs, len(anchors)).cuda().fill_(-1)
+        new_match_gt_idxs = torch.empty(bs, len(anchors)).cuda().fill_(-1)
         
         # get iou_matrix : [N, M]
         iou_matrix  = Box.calculate_iou_matrix(anchors, gt_boxes)
@@ -76,9 +113,43 @@ class AnchorGenerator:
         labels[max_ious >= self.positive_anchor_threshold] = 1
         labels[gt_argmax_ious] = 1
 
+        print(match_gt_idxs.shape)
         return labels, match_gt_idxs
     
-    def sampling_anchors_2(self, labels):
+    def sampling_anchors(self, input_labels):
+        # input_labels : [bs, N]
+        sampling_labels = torch.empty(input_labels.shape).cuda().fill_(-1)
+
+        for i, labels in enumerate(input_labels):
+            pos_index = torch.where(labels == 1)[0]
+            neg_index = torch.where(labels == 0)[0]
+            sampling_pos_num = int(self.num_sample * self.positive_ratio)
+            sampling_neg_num = int(self.num_sample * (1 - self.positive_ratio))
+
+            # calculate sampling number
+            if pos_index.numel() < sampling_pos_num:
+                sampling_pos_num = pos_index.numel()
+                sampling_neg_num = int(pos_index.numel() * (1 - self.positive_ratio) /  self.positive_ratio)
+
+            if neg_index.numel() < sampling_neg_num:
+                sampling_neg_num = neg_index.numel()
+                sampling_pos_num = int(neg_index.numel() * self.positive_ratio / (1 - self.positive_ratio)) 
+                
+            rand_idx = torch.randperm(pos_index.numel())[:sampling_pos_num]
+            pos_index = pos_index[rand_idx]
+            rand_idx = torch.randperm(neg_index.numel())[:sampling_neg_num]
+            neg_index = neg_index[rand_idx]
+
+            # reassign label
+            sampling_labels[i, pos_index] = 1
+            sampling_labels[i, neg_index] = 0
+
+        return sampling_labels
+
+    def sampling_anchors_3(self, labels):
+        # labels : [bs, N]
+        sampling_labels = torch.empty(labels.shape).cuda().fill_(-1)
+
         pos_index = torch.where(labels == 1)[0]
         neg_index = torch.where(labels == 0)[0]
         sampling_pos_num = int(self.num_sample * self.positive_ratio)
@@ -105,7 +176,7 @@ class AnchorGenerator:
 
         return labels
 
-    def sampling_anchors(self, labels):
+    def sampling_anchors_2(self, labels):
         pos_index = torch.where(labels == 1)[0]
         neg_index = torch.where(labels == 0)[0]
 

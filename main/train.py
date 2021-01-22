@@ -32,8 +32,8 @@ def main():
         trainer.build_model()
         start_epoch = 0
     
+    # Tensorboard logger
     writer = SummaryWriter('../runs')
-
     start_time = time.time()
 
     trainer.set_lr(0)
@@ -53,7 +53,7 @@ def main():
             
             cls_losses = cls_losses + cls_loss
             loc_losses = loc_losses + loc_loss
-            if i % 100 == 99:
+            if i % 50 == 49:
                 writer.add_scalar('Train_Loss/cls_loss', cls_losses.item(), epoch * len(trainer.dataloader) + i)
                 writer.add_scalar('Train_Loss/loc_loss', loc_losses.item(), epoch * len(trainer.dataloader) + i)
                 print("Epoch: %d / Iter : %d / cls Loss : %f / loc Loss : %f / Time : %f "%(epoch, i, cls_losses, loc_losses, time.time() - start_time))

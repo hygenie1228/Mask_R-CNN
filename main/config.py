@@ -2,28 +2,28 @@ import os
 import sys
 
 class Config:
-    # path config
+    # Path Config
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.join(cur_dir, '..')
     
-    # training parameter
-    save_checkpoint = False
-    save_model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint_epoch2_0121_ori.pth')
-    load_checkpoint = True
-    load_model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint_epoch2_0121.pth')
-    visualize = True
+    # Training Parameter
+    save_checkpoint = True
+    save_model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint_epoch2_0123.pth')
+    load_checkpoint = False
+    load_model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint_epoch1_0122.pth')
+    visualize = False
 
-    batch_size = 1
-    num_worker = 1
-    shuffle = False
-    epoch = 3
     is_train = 'train'
-    lr = 0.001
+    batch_size = 2
+    num_worker = 1
+    shuffle = True
+    epoch = 2
+    lr = 0.002
     weight_decay = 0.0001
     momentum = 0.9
     smooth_l1_beta = 1.0 
 
-    # datasets
+    # Datasets
     train_datasets = ['COCOKeypoint']
     test_datasets = ['COCOKeypoint']
 
@@ -37,27 +37,31 @@ class Config:
     # FPN
     resnet_pretrained = True
     fpn_pretrained = False
-
-    # RPN
-    rpn_features = ['p2', 'p3', 'p4', 'p5', 'p6']
+    
+    # Anchor Generator
     anchor_strides = [4, 8, 16, 32, 64]
     anchor_scales = [32, 64, 128, 256, 512]
     anchor_ratios = [0.5, 1.0, 2.0]
-    pre_nms_topk_train = 12000
-    pre_nms_topk_test = 6000
-    post_nms_topk_train = 2000
-    post_nms_topk_test = 2000
     negative_anchor_threshold = 0.3
     positive_anchor_threshold = 0.7
     num_sample = 128
     positive_ratio = 0.5
+
+    # RPN
+    rpn_features = ['p2', 'p3', 'p4', 'p5', 'p6']
+    pre_nms_topk_train = 12000
+    pre_nms_topk_test = 6000
+    post_nms_topk_train = 2000
+    post_nms_topk_test = 2000
     nms_threshold = 0.7
+
 
     def set_args(self, gpu):
         self.gpu = gpu
 
         os.environ["CUDA_VISIBLE_DEVICES"] = str(self.gpu)
         print('>>> Using GPU: {}'.format(self.gpu))
+
 
 cfg = Config()
 sys.path.insert(0, os.path.join(cfg.root_dir, 'common'))

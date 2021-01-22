@@ -390,7 +390,7 @@ Updates per week.
   1) remove non human class image       - OK!
   2) construct loss function            - OK!
   3) implement region proposal (test)   - OK!
-  4) set batch size = 2
+  4) set batch size = 2                 - ing...
 
 
 * **Improve speed of RPN (anchor generator)**  
@@ -461,6 +461,21 @@ Updates per week.
 
 # Week3
 - TODO  
-  1) set batch size = 2
-  2) Implement ROI Align layer
-  3) training RPN network at various parameters
+  1) set batch size = 2                           - OK!
+  2) training RPN network at various parameters   - OK!
+  3) Implement ROI Align layer
+  4) Implement Fast-RCNN network
+  5) implement NMS algorithm
+
+
+* **Complete RPN Network**  
+  But, Algorithm is too heavy!  
+  -> RPN algorithm의 for문이 너무 많은 것 같음 (특히 batch, level 관련)
+  -> 나중에 time tracking 해보고, 어디서 시간 많이 잡아먹는지 분석, 개선 해나가자.
+
+* **RoI Align layer**
+  RoI align을 for문 없이 병렬적으로 하는 방법 고려 해보자.
+  -> how ?
+
+
+

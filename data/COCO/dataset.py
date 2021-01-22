@@ -86,11 +86,11 @@ class COCOKeypointDataset(Dataset):
         print(len(self.img_ids))
 
     def __len__(self):
-        #return 10000
+        #return 3
         return len(self.img_ids)
 
     def __getitem__(self, index): 
-        index = 4
+        #index = 4
         img_id = self.img_ids[index]
         anns = self.annots[index]
         img_path = self.img_paths[index]

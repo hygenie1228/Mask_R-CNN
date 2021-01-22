@@ -1,6 +1,6 @@
+import numpy as np
 import torch
 import cv2
-import numpy as np
 
 class Img:
     def resize_img(img, min_size, max_size):
