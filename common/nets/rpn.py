@@ -23,7 +23,7 @@ class RPN(nn.Module):
             self.post_nms_topk = cfg.post_nms_topk_test
         
         self.nms_threshold = cfg.nms_threshold
-        self.anchor_samples = cfg.num_sample
+        self.anchor_samples = cfg.anchor_num_sample
         self.num_anchor_ratios = len(cfg.anchor_ratios)
 
         # anchors per one cell
@@ -38,14 +38,10 @@ class RPN(nn.Module):
         self.anchor_deltas = nn.Conv2d(256, 4*self.num_anchor_ratios, 1, stride=1)
 
         self.img = None
-        self.img2 = None
 
     def forward(self, x, images, gt_datas):
         # for debugging
-        img = images[0]
-        gt_data = gt_datas[0]
         self.img = images[0]
-        #self.img2 = images[1]
 
         # generate anchors
         total_anchors = self.anchor_generator.get_anchors(x)
@@ -75,9 +71,9 @@ class RPN(nn.Module):
             pos_anchors = anchors[idxs]
             idxs = torch.where(anchor_labels[0] == 0)[0]
             neg_anchors = anchors[idxs]
-            visualize_labeled_anchors(self.img, gt_data['bboxs'], pos_anchors, neg_anchors, './outputs/labeled_anchor_image.jpg')
+            visualize_labeled_anchors(self.img, gt_datas[0]['bboxs'], pos_anchors, neg_anchors, './outputs/labeled_anchor_image.jpg')
 
-        return cls_loss, loc_loss
+        return cls_loss, loc_loss, proposals
 
     def predict_scores_deltas(self, x):
         pred_scores = []
@@ -206,28 +202,6 @@ class RPN(nn.Module):
             pos_proposal = Box.delta_to_pos(d_anchors, d_delta)
             visualize_labeled_anchors(self.img, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_score_image.jpg')
 
-            '''
-            d_pred_scores = torch.cat(pred_scores[1], dim=0)
-            d_pred_deltas = torch.cat(pred_deltas[1], dim=0)
-
-            idxs = torch.where(anchor_labels[1] == 1)[0]
-            pos_anchors = anchors[idxs]
-            pos_deltas = d_pred_deltas[idxs]
-            d_match_gt_boxes = match_gt_boxes[1][idxs]
-
-            pos_proposal = Box.delta_to_pos(pos_anchors, pos_deltas)
-            visualize_labeled_anchors(self.img2, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/2_debug_anchor_image.jpg')
-
-            scores, idx = d_pred_scores.sort(descending=True)
-            scores, topk_idx = scores[:50], idx[:50]
-            d_delta = d_pred_deltas[topk_idx]
-            d_anchors = anchors[topk_idx]
-
-            pos_proposal = Box.delta_to_pos(d_anchors, d_delta)
-            visualize_labeled_anchors(self.img2, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/2_debug_score_image.jpg')
-
-            '''
-
         return cls_loss, loc_loss
 
 
@@ -341,7 +315,7 @@ class RPN(nn.Module):
             result_proposals.append(pred_proposals[topk_idx])
             
         if cfg.visualize:
-            visualize_anchors(self.img, result_proposals[0][:50], './outputs/proposal_image.jpg')
+            visualize_anchors(self.img, result_proposals[0][:80], './outputs/proposal_image.jpg')
         
         return result_proposals
         #raise ValueError

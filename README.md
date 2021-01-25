@@ -465,7 +465,8 @@ Updates per week.
   2) training RPN network at various parameters   - OK!
   3) Implement ROI Align layer
   4) Implement Fast-RCNN network
-  5) implement NMS algorithm
+  5) Implement NMS algorithm(?)
+  6) spped up 
 
 
 * **Complete RPN Network**  
@@ -473,9 +474,33 @@ Updates per week.
   -> RPN algorithm의 for문이 너무 많은 것 같음 (특히 batch, level 관련)
   -> 나중에 time tracking 해보고, 어디서 시간 많이 잡아먹는지 분석, 개선 해나가자.
 
+  Batch size = 2로, epoch = 2 이후의 학습 결과 :  
+
+  <img src="./assets/log_11.jpg" width="60%" >
+
+* **Implement check ROI level**
+
 * **RoI Align layer**
   RoI align을 for문 없이 병렬적으로 하는 방법 고려 해보자.
-  -> how ?
+  -> how ?  
+  -> 그냥 for문으로 하기로 함  
+  Ref : https://kaushikpatnaik.github.io/annotated/papers/2020/07/04/ROI-Pool-and-Align-Pytorch-Implementation.html
 
 
+  -> (0125) roi align은 구현된듯  
+  모든 proposal 계산한뒤 fc에 feed할려고 했는데,  
+  2000개 정도 proposal을 계산하고 보관하다 보니 out of memory가 남  
+  ==> align하고 바로 fc에 feed해야할듯 -> align을 2000번 반복
+  -> 다시 코드 수정
 
+  -> labeling을 먼저 구현해야한다는 것을 깨달음 
+  1) proposal에 gt box 추가
+  2) labeling 기준 정하기 -> detectron2에는 iou threshold = 0.5 기준
+  3) sampling
+
+
+  * **Label and Sample proposals**
+  sampling nubmer = 256 (detectron2 : 512) 
+  positive ratio = 0.25 
+
+  <img src="./assets/log_12.jpg" width="40%" >

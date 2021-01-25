@@ -5,6 +5,8 @@ from torchvision.models.detection.backbone_utils import resnet_fpn_backbone
 from config import cfg
 from nets.fpn import FPN
 from nets.rpn import RPN
+from nets.roi_align import ROIAlign
+from nets.roi_head import ROIHead
 from utils.visualize import visualize_input_image, visualize_labeled_anchors
 
 class MaskRCNN(nn.Module):
@@ -17,6 +19,10 @@ class MaskRCNN(nn.Module):
         #    backbone = resnet_fpn_backbone('resnet50', pretrained=True, trainable_layers=3)
 
         self.rpn = RPN()
+
+        # roi head
+        self.roi_align = ROIAlign()
+        self.roi_head = ROIHead()
         
     def forward(self, data):
         '''
@@ -35,7 +41,9 @@ class MaskRCNN(nn.Module):
 
         #for image, gt_data in zip(images, gt_datas):
         features = self.fpn(images)
-        cls_loss, loc_loss = self.rpn(features, images, gt_datas)
+        cls_loss, loc_loss, proposals = self.rpn(features, images, gt_datas)
+
+        self.roi_head(features, proposals, images, gt_datas)
 
         # visualize input image
         if cfg.visualize & self.training :  
@@ -49,7 +57,7 @@ class MaskRCNN(nn.Module):
             #raw_gt_data = data[idx]['raw_gt_data']
             #visualize_input_image(gt_img, raw_gt_data, './outputs/gt_image.jpg')
 
-        return cls_loss, loc_loss
+        return cls_loss, loc_loss, 22
 
     def recompose_batch(self, images, gt_datas):
         _, h, w = images[0].shape
