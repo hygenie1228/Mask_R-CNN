@@ -497,10 +497,12 @@ Updates per week.
   1) proposal에 gt box 추가
   2) labeling 기준 정하기 -> detectron2에는 iou threshold = 0.5 기준
   3) sampling
-
-
-  * **Label and Sample proposals**
+    
+  
+  * **Label and Sample proposals**  
+  
   sampling nubmer = 256 (detectron2 : 512) 
+  
   positive ratio = 0.25 
-
+  
   <img src="./assets/log_12.jpg" width="40%" >
