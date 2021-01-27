@@ -7,6 +7,7 @@ from torchvision import ops
 
 from config import cfg
 from utils.func import Box
+from utils.losses import smooth_l1_loss
 from utils.visualize import visualize_anchors, visualize_labeled_anchors
 from nets.anchor_generator import AnchorGenerator
 
@@ -22,7 +23,7 @@ class RPN(nn.Module):
             self.pre_nms_topk = cfg.pre_nms_topk_test
             self.post_nms_topk = cfg.post_nms_topk_test
         
-        self.nms_threshold = cfg.nms_threshold
+        self.nms_threshold = cfg.rpn_nms_threshold
         self.anchor_samples = cfg.anchor_num_sample
         self.num_anchor_ratios = len(cfg.anchor_ratios)
 
@@ -171,7 +172,7 @@ class RPN(nn.Module):
         cls_loss = F.binary_cross_entropy_with_logits(mask_scores, gt_labels.to(torch.float32), reduction="sum")
 
         # delta loss function
-        loc_loss = self.smooth_l1_loss(pos_deltas, gt_delta, beta=cfg.smooth_l1_beta)
+        loc_loss = smooth_l1_loss(pos_deltas, gt_delta, beta=cfg.smooth_l1_beta)
 
         # other normalizer
         #cls_loss = cls_loss / len(gt_labels)
@@ -181,7 +182,7 @@ class RPN(nn.Module):
         cls_loss = cls_loss / (batch_size * self.anchor_samples)
         loc_loss = loc_loss / (batch_size * self.anchor_samples)
 
-        if cfg.visualize:
+        if cfg.visualize & self.training:
             # for visualize - trianing
             d_pred_scores = torch.cat(pred_scores[0], dim=0)
             d_pred_deltas = torch.cat(pred_deltas[0], dim=0)
@@ -259,17 +260,6 @@ class RPN(nn.Module):
             visualize_labeled_anchors(self.img, match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_score_image.jpg')
 
         return cls_loss, loc_loss
-
-    def smooth_l1_loss(self, bbox_pred, bbox_targets, beta=1.0):
-        box_diff = bbox_pred - bbox_targets
-        abs_in_box_diff = torch.abs(box_diff)
-        smoothL1_sign = (abs_in_box_diff < beta).detach().float()
-
-        loss_box = smoothL1_sign * 0.5 * torch.pow(box_diff, 2) / beta + \
-                    (1 - smoothL1_sign) * (abs_in_box_diff - (0.5 * beta))
-
-        loss_box = loss_box.view(-1).sum(0)
-        return loss_box
 
     def get_proposals(self, total_anchors, batch_pred_scores, batch_pred_deltas, images):
         img_size = (images[0].shape[1], images[0].shape[2])

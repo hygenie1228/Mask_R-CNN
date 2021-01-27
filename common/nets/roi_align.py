@@ -16,23 +16,27 @@ class ROIAlign(nn.Module):
     def forward(self, features, proposals):
         spatial_levels = self.calculate_level(proposals)
 
-        bs = features[self.roi_features[0]].shape[0]
+        # reshape feature
         reshape_features = []
-
-        for i in range(bs):
+        for i in range(len(proposals)):
             one_batch_feature = []
             for j in self.roi_features:
                 one_batch_feature.append(features[j][i])
             reshape_features.append(one_batch_feature)
 
+        # apply roi align per batch
+        extracted_feature = []
         for features_i, proposals_i, spatial_levels_i in zip(reshape_features, proposals, spatial_levels):
-             self.extract_features(features_i, proposals_i, spatial_levels_i)
-             break
+            print("len proposal : ", len(proposals_i))
+            output_feature = self.extract_features(features_i, proposals_i, spatial_levels_i)
+            extracted_feature.append(output_feature)
+
+        extracted_feature = torch.cat(extracted_feature, dim=0)
+
+        return extracted_feature
     
     def extract_features(self, features, proposals, spatial_levels):
         output_features = []
-        print(proposals.shape)
-        print(spatial_levels.shape)
         for proposal, spatial_level in zip(proposals, spatial_levels):
             # get feature level
             feature = features[spatial_level]
@@ -40,26 +44,19 @@ class ROIAlign(nn.Module):
             # rescaling
             proposal = proposal * self.pooler_scales[spatial_level]
 
-            print("!!!")
-            print(feature.shape)
-
             # get sampling indexs : (H, W, 2)
             w_range, h_range = self.calculate_sampling_idxs(proposal)
 
+            # biliear interpolate feature
             interpolate_feature = self.bilinear_interpolate(feature, w_range, h_range)
             interpolate_feature = interpolate_feature.unsqueeze(0)
 
-            print(interpolate_feature.shape)
-            
+            # adaptive max pooling
             output_feature = self.max_pooling(interpolate_feature)
             output_features.append(output_feature)
 
-            print(output_feature.shape)
-        
-        print("!!!!!")
-        print(len(output_features))
-        #output_features = torch.cat(output_features, dim=0)
-        #print(output_features.shape)
+        output_features = torch.cat(output_features, dim=0)
+        return output_features
 
     def bilinear_interpolate(self, feature, x, y):
         x0 = torch.floor(x).long()
@@ -67,6 +64,7 @@ class ROIAlign(nn.Module):
         y0 = torch.floor(y).long()
         y1 = y0 + 1
         
+        # clamp
         x0.clamp_(min=0, max=feature.shape[2]-1)
         x1.clamp_(min=0, max=feature.shape[2]-1)
         y0.clamp_(min=0, max=feature.shape[1]-1)

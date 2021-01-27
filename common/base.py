@@ -5,6 +5,7 @@ from torch.utils.data import DataLoader
 from dataset import DatasetManager
 from nets.rcnn import MaskRCNN
 from config import cfg
+import copy
 
 class Trainer:
     def __init__(self):
@@ -68,7 +69,9 @@ class Trainer:
         self.set_optimizer()
 
         checkpoint = torch.load(cfg.load_model_path)
+       
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         epoch = checkpoint['epoch'] + 1
+
         return epoch

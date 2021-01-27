@@ -463,10 +463,10 @@ Updates per week.
 - TODO  
   1) set batch size = 2                           - OK!
   2) training RPN network at various parameters   - OK!
-  3) Implement ROI Align layer
-  4) Implement Fast-RCNN network
+  3) Implement ROI Align layer                    - OK!
+  4) Implement Fast-RCNN network                  - OK!
   5) Implement NMS algorithm(?)
-  6) spped up 
+  6) speed up network
 
 
 * **Complete RPN Network**  
@@ -501,8 +501,43 @@ Updates per week.
   
   * **Label and Sample proposals**  
   
-  sampling nubmer = 256 (detectron2 : 512) 
+  sampling nubmer = 256  -> 논문에서는 512이지만 gpu memory 문제로 인해 256로 변경  
+      (나중에 메모리 최적화 하여 512로 수정할 것임)
+  positive ratio = 0.25   
   
-  positive ratio = 0.25 
+  <img src="./assets/log_12.jpg" width="40%" >  
   
-  <img src="./assets/log_12.jpg" width="40%" >
+  * **Implement Fast RCNN layers**  
+
+  * **Match prediction - gt data**
+  
+  * **Implement loss function**
+
+  * **Train entire model**
+  -> train RPN 1 epoch, entire 1 epoch.
+
+  (0127) 학습 중간에 자꾸 에러 남. argument error하기는 하는데, 어느 부분에서 문제가 있는지 몰라서,  
+  문제가 되는 index를 다시 뽑아서 원인 파악하고자 함
+  
+  학습 중간에 error남 : proposal이 0개 뽑혀서 그런지 확인
+
+  =>  
+  RuntimeError : There were no tensor arguments to this function (e.g. you passed an empty list of Tensors,) but no fallback function is registered for schema aten::_cat. This usually means that this function requires a non-empty list of Tensors. 
+
+  -> proposal은 무조건 1이상으로 설정해뒀는데 왜 그런지 확인해봐야겠음.  
+  -> sampling의 문제인가?  
+  -> 학습 중간에 생기는 것이기 때문에 debugging에 시간 많이 소요
+
+
+-- Question  
+  1) how to save/load part of model?
+  2) RoI align을 debugging하기가 어려움. 
+    -> RoI align이 잘되는 건지, 아니면 잘못된 RoI align layer가 출력하는 패턴을 보고 classifier가 분류하는건지,
+    -> 평가지표를 통해 성능 측정함으로써 확인해봐야할듯
+    
+
+# Week4
+- TODO  
+  1) Implement Evaluation code.
+  2) Speed up network
+  3) Code cleanup

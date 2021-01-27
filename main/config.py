@@ -5,19 +5,20 @@ class Config:
     # Path Config
     cur_dir = os.path.dirname(os.path.abspath(__file__))
     root_dir = os.path.join(cur_dir, '..')
+    checkpoint_dir = os.path.join(root_dir, 'common', 'nets', 'checkpoints')
     
     # Training Parameter
-    save_checkpoint = False
-    save_model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint_epoch2_0123.pth')
+    save_checkpoint = True
     load_checkpoint = True
-    load_model_path = os.path.join(root_dir, 'common', 'nets', 'checkpoints', 'checkpoint_epoch2_0123.pth')
-    visualize = True
+    save_model_path = os.path.join(checkpoint_dir, 'checkpoint_epoch2_0127_final.pth')
+    load_model_path = os.path.join(checkpoint_dir, 'checkpoint_epoch1_0126.pth')
+    visualize = False
 
     is_train = 'train'
     batch_size = 2
     num_worker = 1
-    shuffle = False
-    epoch = 3
+    shuffle = True
+    epoch = 2
     lr = 0.002
     weight_decay = 0.0001
     momentum = 0.9
@@ -48,18 +49,20 @@ class Config:
     anchor_positive_ratio = 0.5
 
     # RPN
+    rpn_pretrained = True
     rpn_features = ['p2', 'p3', 'p4', 'p5', 'p6']
     pre_nms_topk_train = 12000
     pre_nms_topk_test = 6000
     post_nms_topk_train = 1000
     post_nms_topk_test = 1000
-    nms_threshold = 0.7
+    rpn_nms_threshold = 0.7
 
     # ROIHead
     roi_threshold = 0.5
     roi_num_sample = 256
     roi_positive_ratio = 0.25
     num_labels = 1
+    roi_head_nms_threshold = 0.5
 
     # ROIAlign
     output_size = (7, 7)
