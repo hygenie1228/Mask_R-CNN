@@ -43,18 +43,12 @@ class Trainer:
             if value.requires_grad:
                 params += [{'params': [value],'lr': self.lr, 'weight_decay': cfg.weight_decay}]
 
-        '''
-        params = []
-        for key, value in dict(self.model.named_parameters()).items():
-            if value.requires_grad:
-                if 'bias' in key:
-                    params += [{'params':[value],'lr':self.lr*(True + 1), \
-                            'weight_decay': False and 0.0005 or 0}]
-                else:
-                    params += [{'params':[value],'lr':self.lr, 'weight_decay': 0.0005}]
-        '''
         #self.optimizer = torch.optim.Adam(params)
         self.optimizer = torch.optim.SGD(params, momentum=cfg.momentum)
+        
+        # freeze backbone & rpn model
+        if cfg.freeze_rpn:
+            self.model.freeze_rpn()
 
     def save_model(self, epoch):
         torch.save({

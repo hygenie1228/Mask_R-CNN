@@ -43,7 +43,7 @@ class ROIHead(nn.Module):
 
             # add gt_box to proposals
             reshape_proposals = self.add_gt_boxes(proposals, gt_boxes)
-            
+
             # labeling
             proposal_labels, match_gt_boxes = self.labeling_proposals(reshape_proposals, gt_labels, gt_boxes)
             proposal_labels = self.sampling_proposals(proposal_labels)
@@ -57,9 +57,7 @@ class ROIHead(nn.Module):
             
             cls_loss, loc_loss = self.loss(reshape_proposals, pred_scores, pred_deltas, proposal_labels, match_gt_boxes, num_features)
         
-        # TO DO
-        '''
-        # inference part
+        # Inference part
         # roi align layer
         align_features = self.roi_align(features, proposals)
         # predict scores, deltas
@@ -67,16 +65,15 @@ class ROIHead(nn.Module):
 
         # get top detections
         results = get_top_detections(proposals, pred_scores, pred_deltas)
-        '''
 
         if cfg.visualize & self.training:   
             index = 0
             idxs = torch.where(proposal_labels[index] >= 1)[0]
-            pos_proposals = proposals[index][idxs]
+            pos_proposals = reshape_proposals[index][idxs]
             gt_boxes = match_gt_boxes[index][idxs]
             idxs = torch.where(proposal_labels[index] == 0)[0]
-            neg_proposals = proposals[index][idxs] 
-            visualize_labeled_anchors(self.img, gt_boxes, pos_proposals, neg_proposals, './outputs/labeled_proposal_image.jpg')
+            neg_proposals = reshape_proposals[index][idxs] 
+            visualize_labeled_anchors(self.img, gt_datas[index]['bboxs'], pos_proposals, pos_proposals, './outputs/labeled_proposal_image.jpg')
 
         return cls_loss, loc_loss
 
@@ -85,10 +82,11 @@ class ROIHead(nn.Module):
         start_idx = 0
 
         for proposal in proposals:
-            print(len(proposal))
             pred_score = pred_scores[start_idx : start_idx + len(proposal)]
             pred_delta = pred_deltas[start_idx : start_idx + len(proposal)]
             start_idx = start_idx + len(proposal)
+
+
 
             # pre nms 
             # decoding
@@ -104,6 +102,8 @@ class ROIHead(nn.Module):
         x = self.fc_relu2(x)
 
         pred_scores = self.cls_score(x)
+        print(pred_scroes.shape)
+        pred_scores = F.softmax(pred_scores, dim=1)
         pred_deltas = self.bbox_pred(x)
 
         return pred_scores, pred_deltas
@@ -216,47 +216,19 @@ class ROIHead(nn.Module):
 
         return sampling_labels
 
-    def sampling_proposals_backup(self, input_labels):
-        # input_labels : [bs, N]
-        
-        sampling_labels = []
-        for labels in input_labels:
-            sampling_label = torch.empty(len(labels),).cuda().long().fill_(-1)
-            
-            pos_index = torch.where(labels >= 1)[0]
-            neg_index = torch.where(labels == 0)[0]
-
-            sampling_pos_num = int(self.num_sample * self.positive_ratio)
-            sampling_neg_num = int(self.num_sample * (1 - self.positive_ratio))
-
-            # calculate sampling number
-            if pos_index.numel() < sampling_pos_num:
-                sampling_pos_num = pos_index.numel()
-                sampling_neg_num = int(pos_index.numel() * (1 - self.positive_ratio) /  self.positive_ratio)
-
-            if neg_index.numel() < sampling_neg_num:
-                sampling_neg_num = neg_index.numel()
-                sampling_pos_num = int(neg_index.numel() * self.positive_ratio / (1 - self.positive_ratio)) 
-
-            rand_idx = torch.randperm(pos_index.numel())[:sampling_pos_num]
-            pos_index = pos_index[rand_idx]
-            rand_idx = torch.randperm(neg_index.numel())[:sampling_neg_num]
-            neg_index = neg_index[rand_idx]
-            
-            sampling_label[pos_index] = labels[pos_index]
-            sampling_label[neg_index] = 0
-
-            sampling_labels.append(sampling_label)
-
-        return sampling_labels
-
     def add_gt_boxes(self, proposals, gt_boxes):
         new_proposals = []
 
         for proposal, gt_box in zip(proposals, gt_boxes):
             new_proposals.append(torch.cat([proposal, gt_box], dim=0))
         
-        return new_proposals
+        proposals = []
+        for boxes in new_proposals:
+            mask = ((boxes[:, 2] - boxes[:, 0]) > 0) & ((boxes[:, 3] - boxes[:, 1]) > 0)
+            boxes = boxes[mask]
+            proposals.append(boxes)
+
+        return proposals
 
     def reassign_proposals(self, proposal_labels, proposals, match_gt_boxes):
         new_labels = []

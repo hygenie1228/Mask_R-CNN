@@ -54,3 +54,8 @@ class FPN(nn.Module):
         outputs['p6'] = F.max_pool2d(outputs['p5'], kernel_size=1, stride=2)
 
         return outputs
+
+    def freeze(self):
+        for p in self.parameters():
+            if p.requires_grad:
+                p.requires_grad = False

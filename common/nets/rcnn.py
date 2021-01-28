@@ -19,20 +19,11 @@ class MaskRCNN(nn.Module):
         #if cfg.fpn_pretrained:
         #    backbone = resnet_fpn_backbone('resnet50', pretrained=True, trainable_layers=3)
         self.rpn = RPN()
-
+        
         # roi head
         self.roi_head = ROIHead()
         
     def forward(self, data):
-        '''
-        images = [d['image'].cuda().unsqueeze(0) for d in data]
-        gt_datas = [d['gt_data'] for d in data]
-
-        for image, gt_data in zip(images, gt_datas):
-            features = self.fpn(image)
-            cls_loss, loc_loss = self.rpn(features, image, gt_data)
-        '''
-
         images = [d['image'] for d in data]
         gt_datas = [d['gt_data'] for d in data]
         
@@ -40,15 +31,14 @@ class MaskRCNN(nn.Module):
         
         features = self.fpn(images)
         
-        cls_loss, loc_loss, proposals = self.rpn(features, images, gt_datas)
+        proposal_loss, proposals = self.rpn(features, images, gt_datas)
 
         cls_loss, loc_loss = self.roi_head(features, proposals, images, gt_datas)
 
         # visualize input image
-        if cfg.visualize & self.training :  
-            idx = 0
-            img = images[idx]
-            gt_data = gt_datas[idx]
+        if cfg.visualize & self.training :
+            img = images[0]
+            gt_data = gt_datas[0]
             img = img.cpu().numpy().transpose(1, 2, 0)
             visualize_input_image(img, gt_data, './outputs/input_image.jpg')
 
@@ -89,5 +79,8 @@ class MaskRCNN(nn.Module):
 
         return padded_imgs, process_gt_datas
 
-
+    def freeze_rpn(self):
+        self.fpn.freeze()
+        self.rpn.freeze()
+        
 

@@ -60,21 +60,21 @@ class RPN(nn.Module):
             anchor_labels = self.anchor_generator.sampling_anchors(anchor_labels)
             
             # calculate losses
-            cls_loss, loc_loss = self.loss(anchors, match_gt_boxes, pred_scores, pred_deltas, anchor_labels)
-        
+            proposal_loss = self.loss(anchors, match_gt_boxes, pred_scores, pred_deltas, anchor_labels)
+        else:
+            proposal_loss = (0.0, 0.0)
+
         proposals = self.get_proposals(total_anchors, pred_scores, pred_deltas, images)
 
         # visualize anchors
-        if cfg.visualize & self.training:            
-            #visualize_anchors(img[0], total_anchors[3], './outputs/anchor_image.jpg')
-
+        if cfg.visualize & self.training:
             idxs = torch.where(anchor_labels[0] == 1)[0]
             pos_anchors = anchors[idxs]
             idxs = torch.where(anchor_labels[0] == 0)[0]
             neg_anchors = anchors[idxs]
             visualize_labeled_anchors(self.img, gt_datas[0]['bboxs'], pos_anchors, neg_anchors, './outputs/labeled_anchor_image.jpg')
-
-        return cls_loss, loc_loss, proposals
+        
+        return proposal_loss, proposals
 
     def predict_scores_deltas(self, x):
         pred_scores = []
@@ -181,7 +181,7 @@ class RPN(nn.Module):
         # normalizer
         cls_loss = cls_loss / (batch_size * self.anchor_samples)
         loc_loss = loc_loss / (batch_size * self.anchor_samples)
-
+        
         if cfg.visualize & self.training:
             # for visualize - trianing
             d_pred_scores = torch.cat(pred_scores[0], dim=0)
@@ -202,62 +202,6 @@ class RPN(nn.Module):
 
             pos_proposal = Box.delta_to_pos(d_anchors, d_delta)
             visualize_labeled_anchors(self.img, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_score_image.jpg')
-
-        return cls_loss, loc_loss
-
-
-    def loss_2(self, anchors, gt_boxes, pred_scores, pred_deltas, anchor_labels, match_gt_idxs):
-        '''
-            anchors :       [N, 4]
-            gt_boxes :      [bs, N, 4]
-            pred_scores :   [bs, 5, n]
-            pred_deltas :   [bs, 5, n, 4]
-            anchor_labels : [bs, N]
-            match_gt_idxs : [bs, N]
-        '''
-
-        pred_scores = torch.cat(pred_scores, dim=0)
-        pred_deltas = torch.cat(pred_deltas, dim=0)
-
-        # scores matching
-        idxs = torch.where(anchor_labels >= 0)[0]
-        gt_labels = anchor_labels[idxs]                             # target
-        mask_scores = pred_scores[idxs]                             # pred
-
-        # deltas matching
-        idxs = torch.where(anchor_labels == 1)[0]
-        pos_anchors = anchors[idxs]                                 # anchor
-        match_gt_idxs = match_gt_idxs[idxs]         
-        match_gt_boxes = gt_boxes[match_gt_idxs]                    # gt box
-        
-        gt_delta = Box.pos_to_delta(match_gt_boxes, pos_anchors)    # target
-        pos_deltas = pred_deltas[idxs]                              # pred
-        
-        # score loss function
-        cls_loss = F.binary_cross_entropy_with_logits(mask_scores, gt_labels.to(torch.float32), reduction="sum")
-
-        # delta loss function
-        loc_loss = self.smooth_l1_loss(pos_deltas, gt_delta, beta=cfg.smooth_l1_beta)
-
-        # other normalizer
-        #cls_loss = cls_loss / len(gt_labels)
-        #loc_loss = loc_loss / len(gt_delta)
-
-        cls_loss = cls_loss / self.anchor_samples
-        loc_loss = loc_loss / self.anchor_samples
-
-        if cfg.visualize:
-            # for visualize - trianing
-            scores, idx = pred_scores.sort(descending=True)
-            scores, topk_idx = scores[:50], idx[:50]
-            d_delta = pred_deltas[topk_idx]
-            d_anchors = anchors[topk_idx]
-
-            pos_proposal = Box.delta_to_pos(pos_anchors, pos_deltas)
-            visualize_labeled_anchors(self.img, match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_anchor_image.jpg')
-
-            pos_proposal = Box.delta_to_pos(d_anchors, d_delta)
-            visualize_labeled_anchors(self.img, match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_score_image.jpg')
 
         return cls_loss, loc_loss
 
@@ -308,4 +252,8 @@ class RPN(nn.Module):
             visualize_anchors(self.img, result_proposals[0][:80], './outputs/proposal_image.jpg')
         
         return result_proposals
-        #raise ValueError
+
+    def freeze(self):
+        for p in self.parameters():
+            if p.requires_grad:
+                p.requires_grad = False

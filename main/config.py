@@ -10,15 +10,16 @@ class Config:
     # Training Parameter
     save_checkpoint = True
     load_checkpoint = True
-    save_model_path = os.path.join(checkpoint_dir, 'checkpoint_epoch2_0127_final.pth')
-    load_model_path = os.path.join(checkpoint_dir, 'checkpoint_epoch1_0126.pth')
-    visualize = False
+    save_model_path = os.path.join(checkpoint_dir, 'checkpoint_epoch3_0128_align.pth')
+    load_model_path = os.path.join(checkpoint_dir, 'checkpoint_epoch2_0127_rpn.pth')
+    visualize = True
+    freeze_rpn = False
 
     is_train = 'train'
     batch_size = 2
     num_worker = 1
     shuffle = True
-    epoch = 2
+    epoch = 3
     lr = 0.002
     weight_decay = 0.0001
     momentum = 0.9

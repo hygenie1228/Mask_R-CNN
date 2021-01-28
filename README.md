@@ -513,7 +513,7 @@ Updates per week.
   
   * **Implement loss function**
 
-  * **Train entire model**
+  * **Train entire model**  
   -> train RPN 1 epoch, entire 1 epoch.
 
   (0127) 학습 중간에 자꾸 에러 남. argument error하기는 하는데, 어느 부분에서 문제가 있는지 몰라서,  
@@ -527,6 +527,19 @@ Updates per week.
   -> proposal은 무조건 1이상으로 설정해뒀는데 왜 그런지 확인해봐야겠음.  
   -> sampling의 문제인가?  
   -> 학습 중간에 생기는 것이기 때문에 debugging에 시간 많이 소요
+
+  =>
+  RuntimeError: adaptive_max_pool2d_cuda(): expected input to have non-empty spatial dimensions, but input has sizes [1, 256, 0, 7] with dimension 2 being empty
+
+  -> proposal 넣기 전에 valid check를 한번 더 함.
+
+
+  * **During training FastRCNN part, freeze backbone & RPN**
+
+  -> ROIAlign 부분에 문제가 있는 것 같음 : 연결하면 학습이 안됨  
+
+  -> bilinear interpolate시에 x, y좌표를 계산하는 과정에서 이 부분에 loss가 흘러가서 문제가 된듯  
+  -> .detach()를 통해 해결... 학습 하여 확인해보자.
 
 
 -- Question  
