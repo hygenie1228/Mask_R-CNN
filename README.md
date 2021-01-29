@@ -542,6 +542,25 @@ Updates per week.
   -> .detach()를 통해 해결... 학습 하여 확인해보자.
 
 
+  RPN 2 epoch training -> Entire network 2500 iters   
+  Final Result : 
+
+  <img src="./assets/log_13.jpg" width="60%" >
+
+  RPN 2 epoch training, Entire network 1 epoch  
+  Result :  
+
+  <img src="./assets/log_14.jpg" width="60%" >
+
+
+  When train entire network, change in backbone network  
+  so, RPN network's performance is lowered.  
+
+  =>  
+  1) Adpative learning : RPN -> Entire -> RPN -> Entire  
+  2) Loss merge learning : RPN + Entire
+
+
 -- Question  
   1) how to save/load part of model?
   2) RoI align을 debugging하기가 어려움. 

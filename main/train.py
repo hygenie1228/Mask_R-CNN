@@ -47,7 +47,7 @@ def main():
 
             cls_loss, loc_loss = trainer.model(data)
 
-            loss = cls_loss + loc_loss
+            loss = cls_loss + loc_loss * 5.0
             loss.backward()
             trainer.optimizer.step()
             

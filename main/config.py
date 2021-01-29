@@ -9,17 +9,17 @@ class Config:
     
     # Training Parameter
     save_checkpoint = True
-    load_checkpoint = True
-    save_model_path = os.path.join(checkpoint_dir, 'checkpoint_epoch3_0128_align.pth')
+    load_checkpoint = False
+    save_model_path = os.path.join(checkpoint_dir, 'rpn_epoch1_0129.pth')
     load_model_path = os.path.join(checkpoint_dir, 'checkpoint_epoch2_0127_rpn.pth')
-    visualize = True
+    visualize = False
     freeze_rpn = False
 
     is_train = 'train'
     batch_size = 2
     num_worker = 1
     shuffle = True
-    epoch = 3
+    epoch = 1
     lr = 0.002
     weight_decay = 0.0001
     momentum = 0.9
@@ -50,7 +50,6 @@ class Config:
     anchor_positive_ratio = 0.5
 
     # RPN
-    rpn_pretrained = True
     rpn_features = ['p2', 'p3', 'p4', 'p5', 'p6']
     pre_nms_topk_train = 12000
     pre_nms_topk_test = 6000
@@ -61,9 +60,10 @@ class Config:
     # ROIHead
     roi_threshold = 0.5
     roi_num_sample = 256
-    roi_positive_ratio = 0.25
+    roi_positive_ratio = 0.5
     num_labels = 1
     roi_head_nms_threshold = 0.5
+    score_threshold = 0.7
 
     # ROIAlign
     output_size = (7, 7)

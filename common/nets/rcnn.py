@@ -32,9 +32,9 @@ class MaskRCNN(nn.Module):
         features = self.fpn(images)
         
         proposal_loss, proposals = self.rpn(features, images, gt_datas)
-
+        
         cls_loss, loc_loss = self.roi_head(features, proposals, images, gt_datas)
-
+        
         # visualize input image
         if cfg.visualize & self.training :
             img = images[0]
@@ -46,7 +46,7 @@ class MaskRCNN(nn.Module):
             #raw_gt_data = data[idx]['raw_gt_data']
             #visualize_input_image(gt_img, raw_gt_data, './outputs/gt_image.jpg')
 
-        return cls_loss, loc_loss
+        return proposal_loss
 
     def recompose_batch(self, images, gt_datas):
         _, h, w = images[0].shape

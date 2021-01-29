@@ -61,9 +61,9 @@ class Trainer:
     def load_model(self):
         self.build_model()
         self.set_optimizer()
-
+        #
+        
         checkpoint = torch.load(cfg.load_model_path)
-       
         self.model.load_state_dict(checkpoint['model_state_dict'])
         self.optimizer.load_state_dict(checkpoint['optimizer_state_dict'])
         epoch = checkpoint['epoch'] + 1

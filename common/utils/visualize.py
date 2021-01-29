@@ -16,7 +16,7 @@ def visualize_anchors(img, anchors, output_path):
     cv2.imwrite(output_path, img)
     img = cv2.imread(output_path)
         
-    img = Box.visualize_box(img, anchors, color=(255, 255, 255), thickness=1)
+    img = Box.visualize_box(img, anchors, color=(255, 255, 255), thickness=2)
     cv2.imwrite(output_path, img)
 
 def visualize_labeled_anchors(img, bboxs, pos_anchors, neg_anchors, output_path):

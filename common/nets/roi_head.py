@@ -1,6 +1,7 @@
 import torch
 from torch import nn
 import torch.nn.functional as F
+from torchvision import ops
 
 from config import cfg
 from nets.roi_align import ROIAlign
@@ -15,7 +16,9 @@ class ROIHead(nn.Module):
         self.num_sample = cfg.roi_num_sample
         self.positive_ratio = cfg.roi_positive_ratio
         self.num_labels = cfg.num_labels
+        self.score_threshold = cfg.score_threshold
         self.nms_threshold = cfg.roi_head_nms_threshold
+        
         
         # roi align layer
         self.roi_align = ROIAlign()
@@ -56,15 +59,14 @@ class ROIHead(nn.Module):
             pred_scores, pred_deltas = self.predict_scores_deltas(align_features)
             
             cls_loss, loc_loss = self.loss(reshape_proposals, pred_scores, pred_deltas, proposal_labels, match_gt_boxes, num_features)
-        
-        # Inference part
-        # roi align layer
-        align_features = self.roi_align(features, proposals)
-        # predict scores, deltas
-        pred_scores, pred_deltas = self.predict_scores_deltas(align_features)
+        else:
+            # roi align layer
+            align_features = self.roi_align(features, proposals)
+            # predict scores, deltas
+            pred_scores, pred_deltas = self.predict_scores_deltas(align_features)
 
-        # get top detections
-        results = get_top_detections(proposals, pred_scores, pred_deltas)
+            # get top detections
+            results = self.get_top_detections(proposals, pred_scores, pred_deltas, images)
 
         if cfg.visualize & self.training:   
             index = 0
@@ -78,20 +80,45 @@ class ROIHead(nn.Module):
         return cls_loss, loc_loss
 
 
-    def get_top_detections(self, proposals, pred_scores, pred_deltas):
+    def get_top_detections(self, proposals, pred_scores, pred_deltas, images):
+        img_size = (images[0].shape[1], images[0].shape[2])
         start_idx = 0
 
+        results = []
         for proposal in proposals:
             pred_score = pred_scores[start_idx : start_idx + len(proposal)]
             pred_delta = pred_deltas[start_idx : start_idx + len(proposal)]
             start_idx = start_idx + len(proposal)
+            
+            result = []
+            for i in range(1, self.num_labels+1):
+                idxs = torch.where(pred_score[:, i] > self.score_threshold)[0]
+                pred_scores_i = pred_score[idxs, i]
+                pred_delta_i = pred_delta[idxs, :]
+                proposal_i = proposal[idxs]
+
+                detections_i = Box.delta_to_pos(proposal_i, pred_delta_i)
+                
+                # valid check
+                pred_scores_i, detections_i = Box.box_valid_check(pred_scores_i, detections_i, img_size)
+                
+                # nms
+                keep = ops.nms(detections_i, pred_scores_i, self.nms_threshold)
+
+                result.append({
+                    'label' : i,
+                    'score' : pred_scores_i[keep].detach(),
+                    'bbox' : detections_i[keep].detach()
+                })
+
+            results.append(result)
+
+        print(results)
+        if cfg.visualize:
+            vis_result = results[0][0]['bbox']
+            visualize_anchors(self.img, vis_result, './outputs/final_result_image.jpg')
 
 
-
-            # pre nms 
-            # decoding
-            # valid box
-            # nms
 
 
     def predict_scores_deltas(self, x):
@@ -102,7 +129,6 @@ class ROIHead(nn.Module):
         x = self.fc_relu2(x)
 
         pred_scores = self.cls_score(x)
-        print(pred_scroes.shape)
         pred_scores = F.softmax(pred_scores, dim=1)
         pred_deltas = self.bbox_pred(x)
 
