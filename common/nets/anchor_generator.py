@@ -113,22 +113,3 @@ class AnchorGenerator:
             sampling_labels[i, neg_index] = 0
 
         return sampling_labels
-
-    def sampling_anchors_2(self, labels):
-        pos_index = torch.where(labels == 1)[0]
-        neg_index = torch.where(labels == 0)[0]
-
-        sampling_pos_num = min(pos_index.numel(), int(self.num_sample * self.positive_ratio))
-        sampling_neg_num = min(neg_index.numel(), int(self.num_sample * (1 - self.positive_ratio)))
-
-        rand_idx = torch.randperm(pos_index.numel())[:sampling_pos_num]
-        pos_index = pos_index[rand_idx]
-        rand_idx = torch.randperm(neg_index.numel())[:sampling_neg_num]
-        neg_index = neg_index[rand_idx]
-
-        # reassign label
-        labels = torch.empty(len(labels),).cuda().fill_(-1)
-        labels[pos_index] = 1
-        labels[neg_index] = 0
-
-        return labels

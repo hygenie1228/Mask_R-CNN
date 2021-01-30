@@ -7,7 +7,7 @@ from config import cfg
 from nets.roi_align import ROIAlign
 from utils.func import Box
 from utils.losses import smooth_l1_loss
-from utils.visualize import visualize_anchors, visualize_labeled_anchors
+from utils.visualize import visualize_box, visualize_labeled_box, visualize_result
 
 class ROIHead(nn.Module):
     def __init__(self):
@@ -58,15 +58,16 @@ class ROIHead(nn.Module):
             # predict scores, deltas
             pred_scores, pred_deltas = self.predict_scores_deltas(align_features)
             
-            cls_loss, loc_loss = self.loss(reshape_proposals, pred_scores, pred_deltas, proposal_labels, match_gt_boxes, num_features)
-        else:
-            # roi align layer
-            align_features = self.roi_align(features, proposals)
-            # predict scores, deltas
-            pred_scores, pred_deltas = self.predict_scores_deltas(align_features)
+            detection_loss = self.loss(reshape_proposals, pred_scores, pred_deltas, proposal_labels, match_gt_boxes, num_features)
+            results = None
+        #else:
+        # roi align layer
+        align_features = self.roi_align(features, proposals)
+        # predict scores, deltas
+        pred_scores, pred_deltas = self.predict_scores_deltas(align_features)
 
-            # get top detections
-            results = self.get_top_detections(proposals, pred_scores, pred_deltas, images)
+        # get top detections
+        results = self.get_top_detections(proposals, pred_scores, pred_deltas, images)
 
         if cfg.visualize & self.training:   
             index = 0
@@ -75,9 +76,9 @@ class ROIHead(nn.Module):
             gt_boxes = match_gt_boxes[index][idxs]
             idxs = torch.where(proposal_labels[index] == 0)[0]
             neg_proposals = reshape_proposals[index][idxs] 
-            visualize_labeled_anchors(self.img, gt_datas[index]['bboxs'], pos_proposals, pos_proposals, './outputs/labeled_proposal_image.jpg')
+            visualize_labeled_box(self.img, gt_datas[index]['bboxs'], pos_proposals, pos_proposals, './outputs/labeled_proposal_image.jpg')
 
-        return cls_loss, loc_loss
+        return detection_loss, results
 
 
     def get_top_detections(self, proposals, pred_scores, pred_deltas, images):
@@ -106,17 +107,27 @@ class ROIHead(nn.Module):
                 keep = ops.nms(detections_i, pred_scores_i, self.nms_threshold)
 
                 result.append({
-                    'label' : i,
-                    'score' : pred_scores_i[keep].detach(),
-                    'bbox' : detections_i[keep].detach()
-                })
+                        'label' : i,
+                        'score' : pred_scores_i[keep],
+                        'bbox' : detections_i[keep]
+                    })
+                '''
+                for score, bbox in zip(pred_scores_i[keep], detections_i[keep]):
+                    result.append({
+                        'label' : i,
+                        'score' : score,
+                        'bbox' : bbox
+                    })
+                '''
 
             results.append(result)
 
         print(results)
         if cfg.visualize:
             vis_result = results[0][0]['bbox']
-            visualize_anchors(self.img, vis_result, './outputs/final_result_image.jpg')
+            visualize_result(self.img, vis_result, './outputs/final_result_image.jpg')
+
+        return results
 
 
 
@@ -146,6 +157,7 @@ class ROIHead(nn.Module):
             start_idx = start_idx + interval
 
             # score loss function
+            #cls_loss = cls_loss + F.cross_entropy(pred_score, gt_label.long(), reduction="sum")
             cls_loss = cls_loss + F.cross_entropy(pred_score, gt_label.long(), reduction="sum")
             
             # deltas matching
@@ -174,7 +186,7 @@ class ROIHead(nn.Module):
             d_match_gt_boxes = match_gt_boxes[0][idxs]
 
             pos_proposal = Box.delta_to_pos(pos_proposals, pos_deltas)
-            visualize_labeled_anchors(self.img, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_proposal_image.jpg')
+            visualize_labeled_box(self.img, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_proposal_image.jpg')
 
             scores, idx = d_pred_scores[:, 1].sort(descending=True)
             scores, topk_idx = scores[:15], idx[:15]
@@ -182,9 +194,8 @@ class ROIHead(nn.Module):
             d_proposals = proposals[0][topk_idx]
 
             pos_proposal = Box.delta_to_pos(d_proposals, d_delta)
-            visualize_labeled_anchors(self.img, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_final_image.jpg')
+            visualize_labeled_box(self.img, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_final_image.jpg')
             
-
         return cls_loss, loc_loss
 
     def labeling_proposals(self, proposals, gt_labels, gt_boxes):

@@ -1,64 +1,52 @@
 import argparse
 import torch
 import torch.backends.cudnn as cudnn
-import cv2
+import time
 
 from config import cfg
 from base import Trainer
-import time
-from torch.utils.tensorboard import SummaryWriter
+from utils.logger import Logger
+
 
 def parse_args():
     parser = argparse.ArgumentParser()
     parser.add_argument('--gpu', type=str, default=0)
     args = parser.parse_args()
-   
     return args
 
 def main():
     # argument parse and create log
     args = parse_args()
 
-    # restrict one gpu (not support distributed learning)
+    # restrict one gpu : not support distributed learning
     cfg.set_args(args.gpu)
     cudnn.benchmark = True
 
     # set trainer
     trainer = Trainer()
     trainer.build_dataloader()
+    trainer.build_model()
+    trainer.set_optimizer()
+    start_epoch = 0
+
+    # load model
     if cfg.load_checkpoint:
         start_epoch = trainer.load_model()
-    else :
-        trainer.build_model()
-        start_epoch = 0
-    
-    # Tensorboard logger
-    writer = SummaryWriter('../runs')
-    start_time = time.time()
 
-    trainer.set_lr(0)
-    trainer.set_optimizer()
+    # logger
+    logger = Logger()
 
+    # train model
     for epoch in range(start_epoch, cfg.epoch):
-        cls_losses = 0
-        loc_losses = 0
         for i, data in enumerate(trainer.dataloader):   
             trainer.optimizer.zero_grad()
+            proposal_loss, detection_loss = trainer.model(data)
 
-            cls_loss, loc_loss = trainer.model(data)
-
-            loss = cls_loss + loc_loss * 5.0
+            loss = proposal_loss[0] + proposal_loss[1] + detection_loss[0] + detection_loss[1]
             loss.backward()
             trainer.optimizer.step()
-            
-            cls_losses = cls_losses + cls_loss.item()
-            loc_losses = loc_losses + loc_loss.item()
-            if i % 50 == 49:
-                writer.add_scalar('Train_Loss/cls_loss', cls_losses, epoch * len(trainer.dataloader) + i)
-                writer.add_scalar('Train_Loss/loc_loss', loc_losses, epoch * len(trainer.dataloader) + i)
-                print("Epoch: %d / Iter : %d / cls Loss : %f / loc Loss : %f / Time : %f "%(epoch, i, cls_losses, loc_losses, time.time() - start_time))
-                cls_losses = 0
-                loc_losses = 0
+
+            logger.log(proposal_loss, detection_loss, epoch, i, epoch*len(trainer.dataloader)+i)
 
         if cfg.save_checkpoint:
             trainer.save_model(epoch)

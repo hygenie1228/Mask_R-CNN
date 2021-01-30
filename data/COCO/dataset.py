@@ -86,7 +86,7 @@ class COCOKeypointDataset(Dataset):
         print(len(self.img_ids))
 
     def __len__(self):
-        #return 5000
+        #return 30000
         return len(self.img_ids)
 
     def __getitem__(self, index): 

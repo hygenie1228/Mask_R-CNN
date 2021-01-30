@@ -1,14 +1,12 @@
 import torch
-import torch.nn.functional as F
-import math
-import numpy as np
 from torch import nn
+import torch.nn.functional as F
 from torchvision import ops
 
 from config import cfg
 from utils.func import Box
 from utils.losses import smooth_l1_loss
-from utils.visualize import visualize_anchors, visualize_labeled_anchors
+from utils.visualize import visualize_box, visualize_labeled_box
 from nets.anchor_generator import AnchorGenerator
 
 class RPN(nn.Module):
@@ -27,7 +25,7 @@ class RPN(nn.Module):
         self.anchor_samples = cfg.anchor_num_sample
         self.num_anchor_ratios = len(cfg.anchor_ratios)
 
-        # anchors per one cell
+        # anchor generator module
         self.anchor_generator = AnchorGenerator()
 
         # layers
@@ -38,17 +36,15 @@ class RPN(nn.Module):
         # predict proposal coordinate
         self.anchor_deltas = nn.Conv2d(256, 4*self.num_anchor_ratios, 1, stride=1)
 
-        self.img = None
-
-    def forward(self, x, images, gt_datas):
+    def forward(self, features, images, gt_datas):
         # for debugging
         self.img = images[0]
 
         # generate anchors
-        total_anchors = self.anchor_generator.get_anchors(x)
+        total_anchors = self.anchor_generator.get_anchors(features)
         
         # predict scores, deltas
-        pred_scores, pred_deltas = self.predict_scores_deltas(x)
+        pred_scores, pred_deltas = self.predict_scores_deltas(features)
 
         if self.training:
             # to device
@@ -64,15 +60,16 @@ class RPN(nn.Module):
         else:
             proposal_loss = (0.0, 0.0)
 
+        # get top proposals
         proposals = self.get_proposals(total_anchors, pred_scores, pred_deltas, images)
-
+        
         # visualize anchors
         if cfg.visualize & self.training:
             idxs = torch.where(anchor_labels[0] == 1)[0]
             pos_anchors = anchors[idxs]
             idxs = torch.where(anchor_labels[0] == 0)[0]
             neg_anchors = anchors[idxs]
-            visualize_labeled_anchors(self.img, gt_datas[0]['bboxs'], pos_anchors, neg_anchors, './outputs/labeled_anchor_image.jpg')
+            visualize_labeled_box(self.img, gt_datas[0]['bboxs'], pos_anchors, neg_anchors, './outputs/labeled_anchor_image.jpg')
         
         return proposal_loss, proposals
 
@@ -174,34 +171,33 @@ class RPN(nn.Module):
         # delta loss function
         loc_loss = smooth_l1_loss(pos_deltas, gt_delta, beta=cfg.smooth_l1_beta)
 
-        # other normalizer
-        #cls_loss = cls_loss / len(gt_labels)
-        #loc_loss = loc_loss / len(gt_delta)
-
         # normalizer
         cls_loss = cls_loss / (batch_size * self.anchor_samples)
         loc_loss = loc_loss / (batch_size * self.anchor_samples)
         
+        # debug - visualize
         if cfg.visualize & self.training:
-            # for visualize - trianing
             d_pred_scores = torch.cat(pred_scores[0], dim=0)
             d_pred_deltas = torch.cat(pred_deltas[0], dim=0)
 
+            d_match_gt_boxes = match_gt_boxes[0][idxs]
+            '''
             idxs = torch.where(anchor_labels[0] == 1)[0]
             pos_anchors = anchors[idxs]
             pos_deltas = d_pred_deltas[idxs]
             d_match_gt_boxes = match_gt_boxes[0][idxs]
 
             pos_proposal = Box.delta_to_pos(pos_anchors, pos_deltas)
-            visualize_labeled_anchors(self.img, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_anchor_image.jpg')
-
+            visualize_labeled_box(self.img, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_anchor_image.jpg')
+            '''
+            
             scores, idx = d_pred_scores.sort(descending=True)
             scores, topk_idx = scores[:50], idx[:50]
             d_delta = d_pred_deltas[topk_idx]
             d_anchors = anchors[topk_idx]
 
             pos_proposal = Box.delta_to_pos(d_anchors, d_delta)
-            visualize_labeled_anchors(self.img, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_score_image.jpg')
+            visualize_labeled_box(self.img, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_score_image.jpg')
 
         return cls_loss, loc_loss
 
@@ -249,11 +245,6 @@ class RPN(nn.Module):
             result_proposals.append(pred_proposals[topk_idx])
             
         if cfg.visualize:
-            visualize_anchors(self.img, result_proposals[0][:80], './outputs/proposal_image.jpg')
+            visualize_box(self.img, result_proposals[0][:80], './outputs/proposal_image.jpg')
         
         return result_proposals
-
-    def freeze(self):
-        for p in self.parameters():
-            if p.requires_grad:
-                p.requires_grad = False

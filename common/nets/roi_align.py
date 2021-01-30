@@ -36,18 +36,6 @@ class ROIAlign(nn.Module):
 
         return extracted_feature
     
-    def torchvision_roi_align(self, features, proposals, spatial_levels):
-        output_features = []
-        for proposal, spatial_level in zip(proposals, spatial_levels):
-            feature = features[spatial_level]
-            spatial_scale = self.pooler_scales[spatial_level]
-
-            output_feature = ops.roi_align(feature.unsqueeze(0), [proposal.unsqueeze(0)], output_size=self.output_size, spatial_scale=spatial_scale)
-            output_features.append(output_feature)
-
-        output_features = torch.cat(output_features, dim=0)
-        return output_features
-
     def extract_features(self, features, proposals, spatial_levels):
         output_features = []
         for proposal, spatial_level in zip(proposals, spatial_levels):
@@ -144,3 +132,14 @@ class ROIAlign(nn.Module):
 
         return spatial_levels
 
+    def torchvision_roi_align(self, features, proposals, spatial_levels):
+        output_features = []
+        for proposal, spatial_level in zip(proposals, spatial_levels):
+            feature = features[spatial_level]
+            spatial_scale = self.pooler_scales[spatial_level]
+
+            output_feature = ops.roi_align(feature.unsqueeze(0), [proposal.unsqueeze(0)], output_size=self.output_size, spatial_scale=spatial_scale)
+            output_features.append(output_feature)
+
+        output_features = torch.cat(output_features, dim=0)
+        return output_features

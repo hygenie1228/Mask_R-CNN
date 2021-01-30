@@ -8,22 +8,21 @@ class Config:
     checkpoint_dir = os.path.join(root_dir, 'common', 'nets', 'checkpoints')
     
     # Training Parameter
-    save_checkpoint = True
-    load_checkpoint = False
-    save_model_path = os.path.join(checkpoint_dir, 'rpn_epoch1_0129.pth')
-    load_model_path = os.path.join(checkpoint_dir, 'checkpoint_epoch2_0127_rpn.pth')
-    visualize = False
-    freeze_rpn = False
+    save_checkpoint = False
+    load_checkpoint = True
+    save_model_path = os.path.join(checkpoint_dir, 'final_epoch1_0130.pth')
+    load_model_path = os.path.join(checkpoint_dir, 'final_epoch2_0129.pth')
+    visualize = True
 
-    is_train = 'train'
-    batch_size = 2
+    batch_size = 1
     num_worker = 1
     shuffle = True
-    epoch = 1
+    epoch = 3
     lr = 0.002
     weight_decay = 0.0001
     momentum = 0.9
     smooth_l1_beta = 1.0 
+    log_interval = 50
 
     # Datasets
     train_datasets = ['COCOKeypoint']
@@ -58,22 +57,20 @@ class Config:
     rpn_nms_threshold = 0.7
 
     # ROIHead
-    roi_threshold = 0.5
-    roi_num_sample = 256
-    roi_positive_ratio = 0.5
     num_labels = 1
+    roi_threshold = 0.6
+    roi_num_sample = 128
+    roi_positive_ratio = 0.5
     roi_head_nms_threshold = 0.5
-    score_threshold = 0.7
+    score_threshold = 0.9
 
     # ROIAlign
     output_size = (7, 7)
     roi_features = ['p2', 'p3', 'p4', 'p5']
     pooler_scales = [0.25, 0.125, 0.0625, 0.03125]
 
-
     def set_args(self, gpu):
         self.gpu = gpu
-
         os.environ["CUDA_VISIBLE_DEVICES"] = str(self.gpu)
         print('>>> Using GPU: {}'.format(self.gpu))
 

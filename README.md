@@ -557,7 +557,7 @@ Updates per week.
   so, RPN network's performance is lowered.  
 
   =>  
-  1) Adpative learning : RPN -> Entire -> RPN -> Entire  
+  1) Adpative learning : RPN -> Entire -> RPN -> Entire  -> ...
   2) Loss merge learning : RPN + Entire
 
 
@@ -573,3 +573,28 @@ Updates per week.
   1) Implement Evaluation code.
   2) Speed up network
   3) Code cleanup
+
+  
+  결과를 확인하는데 오래걸려 training dataset 30000 images로 제한
+
+  학습시간 개선 필요  
+  -> 대부분의 시간이 RoI Align를 통한 forward, backward에서 시간이 걸림  
+  원래는 RoI align sampling을 dense하게 했는데 일정한 수로 sampling하는 방법으로 변경 예정 (i.g. sampling : 2)
+
+  
+  * **Train a model with good performance**
+
+  <img src="./assets/log_15.jpg" width="60%" >
+
+  RPN training 1 epoch -> entire network training 1 epoch  한 결과
+
+  작은 물체, 여러개의 물체에 대해 좋은 detection이 이루어짐.  
+
+  -> 문제점 : 이제는 큰 물체에 대해 여러 번의 detection이 이루어짐.
+  그렇다고 nms threshold를 올리면 작은 물체 여러개 겹쳐있을 때 detection을 하지 않음.  
+  
+  예상 해결점 : 
+  1) proposal labeling threshold를 올리자.  
+  2) coordiante predict가 약한거 같으니, 이 부분 loss의 가중치를 올리자.  
+
+  
