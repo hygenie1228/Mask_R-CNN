@@ -83,5 +83,6 @@ class Tester:
         self.model.load_state_dict(checkpoint['model_state_dict'])
         print(self.model)    
 
-    def evaluate(self):
+    def evaluate(self, results, gt_data):
+        
         pass

@@ -6,7 +6,6 @@ from config import cfg
 from nets.fpn import FPN
 from nets.rpn import RPN
 from nets.roi_head import ROIHead
-from utils.visualize import visualize_input_image
 
 class MaskRCNN(nn.Module):
     def __init__(self):
@@ -19,30 +18,25 @@ class MaskRCNN(nn.Module):
         #if cfg.fpn_pretrained:
         #    backbone = resnet_fpn_backbone('resnet50', pretrained=True, trainable_layers=3)
         
-    def forward(self, data):
+    def forward(self, datas):
         # compose batch
-        images, gt_datas = self.recompose_batch(data)
+        images, gt_datas = self.pre_processing(datas)
         
         # Feed images
         features = self.fpn(images)
         proposal_loss, proposals = self.rpn(features, images, gt_datas)
         detection_loss, results = self.roi_head(features, proposals, images, gt_datas)
-        
-        # visualize input image
-        if cfg.visualize & self.training :
-            img = images[0]
-            gt_data = gt_datas[0]
-            visualize_input_image(images[0], gt_datas[0]['bboxs'], './outputs/input_image.jpg')
 
-            '''
-            gt_img = data[0]['raw_image']
-            raw_gt_data = data[0]['raw_gt_data']
-            visualize_input_image(gt_img, raw_gt_data, './outputs/gt_image.jpg')
-            '''
+        if self.training:
+            return proposal_loss, detection_loss
+        else:
+            results = self.post_processing(datas, results)
+            return results        
 
-        return proposal_loss, detection_loss
-
-    def recompose_batch(self, data):
+    def pre_processing(self, data):
+        if ~self.training & len(data) > 1:
+            raise Exception('[ERROR] Only support batch size = 1 !!!')
+            
         images = [d['image'] for d in data]
         gt_datas = [d['gt_data'] for d in data]
 
@@ -72,4 +66,25 @@ class MaskRCNN(nn.Module):
             padded_imgs[i, :, :h, :w] = image
 
         return padded_imgs, process_gt_datas
+
+    def post_processing(self, datas, results):
+        final_results = []
+
+        for data, result in zip(datas, results):
+            image_id = data['img_id']
+            ratio_h = data['raw_img_size'][0] / data['img_size'][0]
+            ratio_w = data['raw_img_size'][1] / data['img_size'][1]
+            for result_per_label in result:
+                category_id = result_per_label['label']
+                result_per_label['bbox'][:,(0,2)] = result_per_label['bbox'][:,(0,2)] * ratio_w
+                result_per_label['bbox'][:,(1,3)] = result_per_label['bbox'][:,(1,3)] * ratio_h
+                for score, bbox in zip(result_per_label['score'], result_per_label['bbox']):
+                    final_results.append({
+                        'image_id' : image_id,
+                        'category_id' : category_id,
+                        'bbox' : bbox.tolist(),
+                        'score' : score.tolist()
+                    })
+
+        return final_results
 

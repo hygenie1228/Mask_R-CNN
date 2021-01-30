@@ -10,8 +10,8 @@ class Config:
     # Training Parameter
     save_checkpoint = False
     load_checkpoint = True
-    save_model_path = os.path.join(checkpoint_dir, 'final_epoch1_0130.pth')
-    load_model_path = os.path.join(checkpoint_dir, 'final_epoch2_0129.pth')
+    save_model_path = os.path.join(checkpoint_dir, 'final_epoch2_0130_good.pth')
+    load_model_path = os.path.join(checkpoint_dir, 'final_epoch2_0130_f.pth')
     visualize = True
 
     batch_size = 1
@@ -61,7 +61,8 @@ class Config:
     roi_threshold = 0.6
     roi_num_sample = 128
     roi_positive_ratio = 0.5
-    roi_head_nms_threshold = 0.5
+    
+    roi_head_nms_threshold = 0.4
     score_threshold = 0.9
 
     # ROIAlign

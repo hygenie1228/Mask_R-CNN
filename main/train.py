@@ -1,7 +1,6 @@
 import argparse
 import torch
 import torch.backends.cudnn as cudnn
-import time
 
 from config import cfg
 from base import Trainer
@@ -42,12 +41,11 @@ def main():
             trainer.optimizer.zero_grad()
             proposal_loss, detection_loss = trainer.model(data)
 
-            loss = proposal_loss[0] + proposal_loss[1] + detection_loss[0] + detection_loss[1]
+            loss = proposal_loss[0] + 5.0 * proposal_loss[1] + detection_loss[0] + 5.0 * detection_loss[1]
             loss.backward()
             trainer.optimizer.step()
 
             logger.log(proposal_loss, detection_loss, epoch, i, epoch*len(trainer.dataloader)+i)
-
         if cfg.save_checkpoint:
             trainer.save_model(epoch)
 

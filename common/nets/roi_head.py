@@ -60,14 +60,15 @@ class ROIHead(nn.Module):
             
             detection_loss = self.loss(reshape_proposals, pred_scores, pred_deltas, proposal_labels, match_gt_boxes, num_features)
             results = None
-        #else:
-        # roi align layer
-        align_features = self.roi_align(features, proposals)
-        # predict scores, deltas
-        pred_scores, pred_deltas = self.predict_scores_deltas(align_features)
+        else:
+            # roi align layer
+            align_features = self.roi_align(features, proposals)
+            # predict scores, deltas
+            pred_scores, pred_deltas = self.predict_scores_deltas(align_features)
 
-        # get top detections
-        results = self.get_top_detections(proposals, pred_scores, pred_deltas, images)
+            # get top detections
+            results = self.get_top_detections(proposals, pred_scores, pred_deltas, images)
+            detection_loss = (0.0, 0.0)
 
         if cfg.visualize & self.training:   
             index = 0
@@ -111,26 +112,10 @@ class ROIHead(nn.Module):
                         'score' : pred_scores_i[keep],
                         'bbox' : detections_i[keep]
                     })
-                '''
-                for score, bbox in zip(pred_scores_i[keep], detections_i[keep]):
-                    result.append({
-                        'label' : i,
-                        'score' : score,
-                        'bbox' : bbox
-                    })
-                '''
 
             results.append(result)
 
-        print(results)
-        if cfg.visualize:
-            vis_result = results[0][0]['bbox']
-            visualize_result(self.img, vis_result, './outputs/final_result_image.jpg')
-
         return results
-
-
-
 
     def predict_scores_deltas(self, x):
         x = self.flatten(x)

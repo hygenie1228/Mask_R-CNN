@@ -1,12 +1,11 @@
 import argparse
 import torch
 import torch.backends.cudnn as cudnn
-import time
+from tqdm import tqdm
 
 from config import cfg
 from base import Tester
-from utils.logger import Logger
-
+from utils.visualize import visualize_input_image, visualize_result
 
 def parse_args():
     parser = argparse.ArgumentParser()
@@ -28,19 +27,16 @@ def main():
     tester.build_dataloader()
     tester.load_model()
 
-    # logger
-    logger = Logger()
+    for data in tqdm(tester.dataloader):   
+        results = tester.model(data)
 
-    for i, data in enumerate(trainer.dataloader):   
+        # evaluate results
+        tester.evaluate(results[0], data[0]['raw_gt_data'])
 
-        trainer.optimizer.zero_grad()
-        cls_loss, loc_loss = trainer.model(data)
-
-        loss = cls_loss + loc_loss * 5.0
-        loss.backward()
-        trainer.optimizer.step()
-
-        logger.log(cls_loss, loc_loss, epoch, i, epoch*len(trainer.dataloader)+i)
+        # visualize input image
+        if cfg.visualize:
+            visualize_input_image(data[0]['raw_image'], data[0]['raw_gt_data']['bboxs'], './outputs/input_image.jpg')
+            visualize_result(data[0]['raw_image'], results, data[0]['raw_gt_data']['bboxs'], './outputs/result_image.jpg')
 
 
 if __name__ == "__main__":
