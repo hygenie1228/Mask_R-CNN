@@ -629,4 +629,4 @@ Updates per week.
 
 -- Question  
   1) 모델 성능 높이기 위한 우선 순위  
-  : hyper parameter 무엇을 먼저 바꿔야하는가?  
+  : learning rate?, loss function?, arch design?, other parameter...?

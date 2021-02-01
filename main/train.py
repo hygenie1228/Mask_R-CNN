@@ -41,7 +41,7 @@ def main():
             trainer.optimizer.zero_grad()
             proposal_loss, detection_loss = trainer.model(data)
 
-            loss = proposal_loss[0] + 5.0 * proposal_loss[1] + detection_loss[0] + 5.0 * detection_loss[1]
+            loss = proposal_loss[0] + proposal_loss[1] + detection_loss[0] + detection_loss[1]
             loss.backward()
             trainer.optimizer.step()
 

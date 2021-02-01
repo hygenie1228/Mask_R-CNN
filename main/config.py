@@ -8,17 +8,17 @@ class Config:
     checkpoint_dir = os.path.join(root_dir, 'common', 'nets', 'checkpoints')
     
     # Training Parameter
-    save_checkpoint = False
-    load_checkpoint = True
-    save_model_path = os.path.join(checkpoint_dir, 'final_epoch2_0130_good.pth')
+    save_checkpoint = True
+    load_checkpoint = False
+    save_model_path = os.path.join(checkpoint_dir, 'final_epoch1_0201_sample.pth')
     load_model_path = os.path.join(checkpoint_dir, 'final_epoch2_0131_scratch.pth')
     visualize = False
 
-    batch_size = 1
+    batch_size = 2
     num_worker = 1
-    shuffle = True
-    epoch = 3
-    lr = 0.002
+    shuffle = False
+    epoch = 1
+    lr = 0.001
     weight_decay = 0.0001
     momentum = 0.9
     smooth_l1_beta = 1.0 
@@ -72,6 +72,7 @@ class Config:
     output_size = (7, 7)
     roi_features = ['p2', 'p3', 'p4', 'p5']
     pooler_scales = [0.25, 0.125, 0.0625, 0.03125]
+    roi_align_num_samples = 2
 
     def set_args(self, gpu):
         self.gpu = gpu
