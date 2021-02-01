@@ -9,10 +9,12 @@ def visualize_input_image(img, gt_boxes, output_path):
     cv2.imwrite(output_path, img)
 
 def visualize_result(img, results, gt_boxes, output_path):
-    print(results)
+    boxes = []
+    for result in results:
+        boxes.append(result['bbox'])
+    boxes = np.array(boxes)
 
-
-    img = Box.visualize_box(img, gt_boxes, color=(0, 0, 0), thickness=2)
+    img = Box.visualize_box(img, gt_boxes, color=(0, 200, 0), thickness=2)
     img = Box.visualize_box(img, boxes, color=(255, 255, 255), thickness=2)
     cv2.imwrite(output_path, img)
 

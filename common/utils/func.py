@@ -53,6 +53,14 @@ class Box:
 
         return [xmin, ymin, xmax, ymax]
 
+    def xyxy_to_xywh(box):
+        x1 = box[0]
+        y1 = box[1]
+        x2 = box[2] - box[0]
+        y2 = box[3] - box[1]
+
+        return [x1, y1, x2, y2]
+
     def scale_box(boxs, scales):
         new_boxs = []
 

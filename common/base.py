@@ -1,6 +1,6 @@
 import torch
-import cv2
 from torch.utils.data import DataLoader
+import json
 
 from dataset import DatasetManager
 from nets.rcnn import MaskRCNN
@@ -9,27 +9,27 @@ import copy
 
 class Trainer:
     def __init__(self):
+        self.dataset = None
         self.dataloader = None
         self.model = None
         self.optimizer = None
         self.lr = cfg.lr
 
     def build_dataloader(self):
-        dataset = DatasetManager(cfg.train_datasets, train='train')
+        self.dataset = DatasetManager(cfg.train_datasets, train='train')
         
         self.dataloader = DataLoader(
-            dataset,
+            self.dataset,
             batch_size = cfg.batch_size,
             num_workers = cfg.num_worker,
             shuffle = cfg.shuffle,
-            collate_fn = dataset.collate_fn
+            collate_fn = self.dataset.collate_fn
         )
 
     def build_model(self):
         self.model = MaskRCNN()
         self.model.cuda()
         self.model.train()
-
         print(self.model)       
 
     def set_optimizer(self):
@@ -59,19 +59,21 @@ class Trainer:
 
 class Tester:
     def __init__(self):
+        self.dataset = None
         self.dataloader = None
         self.model = None
         self.lr = cfg.lr
+        self.predictions = []
 
     def build_dataloader(self):
-        dataset = DatasetManager(cfg.train_datasets, train='val')
+        self.dataset = DatasetManager(cfg.train_datasets, train='val')
         
         self.dataloader = DataLoader(
-            dataset,
+            self.dataset,
             batch_size = cfg.batch_size,
             num_workers = cfg.num_worker,
             shuffle = cfg.shuffle,
-            collate_fn = dataset.collate_fn
+            collate_fn = self.dataset.collate_fn
         )
        
     def load_model(self):
@@ -83,6 +85,13 @@ class Tester:
         self.model.load_state_dict(checkpoint['model_state_dict'])
         print(self.model)    
 
-    def evaluate(self, results, gt_data):
-        
-        pass
+    def save_results(self, result):
+        self.predictions.extend(result)
+
+    def save_jsons(self):
+        with open(cfg.save_result_path, 'w') as outfile:
+            json.dump(self.predictions, outfile)
+    
+    def evaluate(self):
+        self.dataset.evaluate()
+    

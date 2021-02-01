@@ -6,6 +6,7 @@ from config import cfg
 from nets.fpn import FPN
 from nets.rpn import RPN
 from nets.roi_head import ROIHead
+from utils.func import Box
 
 class MaskRCNN(nn.Module):
     def __init__(self):
@@ -34,7 +35,7 @@ class MaskRCNN(nn.Module):
             return results        
 
     def pre_processing(self, data):
-        if ~self.training & len(data) > 1:
+        if ~self.training & (len(data) > 1):
             raise Exception('[ERROR] Only support batch size = 1 !!!')
             
         images = [d['image'] for d in data]
@@ -78,11 +79,12 @@ class MaskRCNN(nn.Module):
                 category_id = result_per_label['label']
                 result_per_label['bbox'][:,(0,2)] = result_per_label['bbox'][:,(0,2)] * ratio_w
                 result_per_label['bbox'][:,(1,3)] = result_per_label['bbox'][:,(1,3)] * ratio_h
+
                 for score, bbox in zip(result_per_label['score'], result_per_label['bbox']):
                     final_results.append({
                         'image_id' : image_id,
                         'category_id' : category_id,
-                        'bbox' : bbox.tolist(),
+                        'bbox' : Box.xyxy_to_xywh(bbox.tolist()),
                         'score' : score.tolist()
                     })
 

@@ -602,7 +602,31 @@ Updates per week.
 
 * **Convert json format**  
 
+* **Evaluate Results**  
+  Use coco API   
+
+  생각보다 평가 지표가 낮게 나옴  
+  -> xywh 형식으로 바꿔야하는데 xyxy 형식으로 출력하고 있었음  
 
 
-
+  Results :   
   
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.204  
+  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.522  
+  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.116  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.065  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.262  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.329  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.102  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.258  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.280  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.114  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.348  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.450  
+
+  -> Detectron2 보다 성능이 매우 낮음  (detectron2 : 0.536)  
+  --> 목표 : 적어도 AP = 0.45 까지는 올리는게 목표  
+
+-- Question  
+  1) 모델 성능 높이기 위한 우선 순위  
+  : hyper parameter 무엇을 먼저 바꿔야하는가?  

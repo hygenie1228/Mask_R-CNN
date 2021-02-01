@@ -26,18 +26,20 @@ def main():
     tester = Tester()
     tester.build_dataloader()
     tester.load_model()
+    
+    
 
     for data in tqdm(tester.dataloader):   
         results = tester.model(data)
-
-        # evaluate results
-        tester.evaluate(results[0], data[0]['raw_gt_data'])
+        tester.save_results(results)
 
         # visualize input image
         if cfg.visualize:
             visualize_input_image(data[0]['raw_image'], data[0]['raw_gt_data']['bboxs'], './outputs/input_image.jpg')
             visualize_result(data[0]['raw_image'], results, data[0]['raw_gt_data']['bboxs'], './outputs/result_image.jpg')
 
+    tester.save_jsons()
+    tester.evaluate()
 
 if __name__ == "__main__":
     main()

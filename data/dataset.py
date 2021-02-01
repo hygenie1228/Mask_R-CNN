@@ -20,3 +20,6 @@ class DatasetManager:
 
     def collate_fn(self, batch):
         return list(batch)
+
+    def evaluate(self):
+        self.main_dataset.evaluate()

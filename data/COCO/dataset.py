@@ -6,6 +6,7 @@ import copy
 
 from torch.utils.data.dataset import Dataset
 from pycocotools.coco import COCO
+from pycocotools.cocoeval import COCOeval
 from pycocotools import mask
 
 from config import cfg
@@ -86,7 +87,7 @@ class COCOKeypointDataset(Dataset):
         print(len(self.img_ids))
     
     def __len__(self):
-        #return 30000
+        #return 10
         return len(self.img_ids)
 
     def __getitem__(self, index): 
@@ -123,4 +124,14 @@ class COCOKeypointDataset(Dataset):
             gt_data['bboxs'] = Box.scale_box(gt_data['bboxs'], scales)
             gt_data['keypoints'] = Keypoint.scale_keypoint(gt_data['keypoints'], scales)
         return img, gt_data
-    
+
+    def evaluate(self):
+        results = self.db.loadRes(cfg.save_result_path)
+
+        coco_eval = COCOeval(self.db, results, 'bbox')
+        coco_eval.params.catIds = [1]
+        coco_eval.params.imgIds = self.img_ids
+        
+        coco_eval.evaluate()
+        coco_eval.accumulate()
+        coco_eval.summarize()
