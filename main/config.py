@@ -61,9 +61,9 @@ class Config:
 
     # ROIHead
     num_labels = 1
-    roi_threshold = 0.6
+    roi_threshold = 0.5
     roi_num_sample = 128
-    roi_positive_ratio = 0.5
+    roi_positive_ratio = 0.25
 
     roi_head_nms_threshold = 0.4
     score_threshold = 0.7

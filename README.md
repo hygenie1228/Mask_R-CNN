@@ -611,18 +611,18 @@ Updates per week.
 
   Results :   
   
-  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.204  
-  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.522  
-  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.116  
-  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.065  
-  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.262  
-  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.329  
-  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.102  
-  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.258  
-  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.280  
-  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.114  
-  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.348  
-  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.450  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.254  
+  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.563  
+  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.199  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.086  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.309  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.441  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.119  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.315  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.346  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.152   
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.419  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.554  
 
   -> Detectron2 보다 성능이 매우 낮음  (detectron2 : 0.536)  
   --> 목표 : 적어도 AP = 0.45 까지는 올리는게 목표  
