@@ -651,7 +651,7 @@ Updates per week.
   Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.314  
   Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.234  
   Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.398  
-  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.433 
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.433  
   Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.138  
   Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.398  
   Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.439  
