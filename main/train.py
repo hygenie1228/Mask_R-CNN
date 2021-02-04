@@ -26,6 +26,7 @@ def main():
     trainer.build_dataloader()
     trainer.build_model()
     trainer.set_optimizer()
+    trainer.set_scheduler()
     start_epoch = 0
 
     # load model
@@ -41,11 +42,19 @@ def main():
             trainer.optimizer.zero_grad()
             proposal_loss, detection_loss = trainer.model(data)
 
-            loss = proposal_loss[0] + proposal_loss[1] + detection_loss[0] + detection_loss[1]
+            loss = proposal_loss[0] + proposal_loss[1] * cfg.pro_loc_lambda + detection_loss[0] + detection_loss[1] * cfg.det_loc_lambda
             loss.backward()
             trainer.optimizer.step()
 
             logger.log(proposal_loss, detection_loss, epoch, i, epoch*len(trainer.dataloader)+i)
+            if cfg.visualize_switch:
+                if i % 500 == 0:
+                    cfg.visualize = True
+                else:
+                    cfg.visualize = False
+                    
+        trainer.scheduler.step()
+
         if cfg.save_checkpoint:
             trainer.save_model(epoch)
 

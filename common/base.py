@@ -5,7 +5,6 @@ import json
 from dataset import DatasetManager
 from nets.rcnn import MaskRCNN
 from config import cfg
-import copy
 
 class Trainer:
     def __init__(self):
@@ -13,6 +12,7 @@ class Trainer:
         self.dataloader = None
         self.model = None
         self.optimizer = None
+        self.scheduler = None
         self.lr = cfg.lr
 
     def build_dataloader(self):
@@ -38,8 +38,10 @@ class Trainer:
             if value.requires_grad:
                 params += [{'params': [value],'lr': self.lr, 'weight_decay': cfg.weight_decay}]
 
-        #self.optimizer = torch.optim.Adam(params)
         self.optimizer = torch.optim.SGD(params, momentum=cfg.momentum)
+
+    def set_scheduler(self):
+        self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, milestones=[1], gamma=0.1)
 
     def save_model(self, epoch):
         torch.save({

@@ -627,6 +627,46 @@ Updates per week.
   -> Detectron2 보다 성능이 매우 낮음  (detectron2 : 0.536)  
   --> 목표 : 적어도 AP = 0.45 까지는 올리는게 목표  
 
+
+* **Implement new ROI Align**  
+  fix sampling number at ROI align layer   
+  학습속도 2배 이상으로 빨라짐   
+  sampling number를 바꿔가면서 학습해보기  
+
+
+  문제점 : 아래 그림처럼 같은 object에 대해 여러개의 bounding box가 생김  
+  이로인해 AP 감소   
+  -> anchor, proposal sampling 개수를 줄임     
+
+  <img src="./assets/log_15.jpg" width="60%" >  
+
+  1) epoch 늘릴 수록 성능 좋아짐  
+  2) anchor, proposal sampling 개수를 줄일 수록 좋아짐 (RPN 부분 강화 필요)   
+  3) ROI align sampling number 2~3이 좋은듯 (dense가 제일 좋은데 학습시간 오래 걸림)  
+
+  Result : 
+
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.339  
+  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.663  
+  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.314  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.234  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.398  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.433 
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.138  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.398  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.439  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.306  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.508  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.557  
+
+
 -- Question  
   1) 모델 성능 높이기 위한 우선 순위  
-  : learning rate?, loss function?, arch design?, other parameter...?
+  : learning rate?, loss function?, arch design?, other parameter...?  
+
+
+# Week5  
+- TODO  
+  1) Code clean up    
+  2) Train network at various parameters  
+  3) What to do?  

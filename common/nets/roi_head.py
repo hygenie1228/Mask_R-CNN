@@ -77,7 +77,7 @@ class ROIHead(nn.Module):
             gt_boxes = match_gt_boxes[index][idxs]
             idxs = torch.where(proposal_labels[index] == 0)[0]
             neg_proposals = reshape_proposals[index][idxs] 
-            visualize_labeled_box(self.img, gt_datas[index]['bboxs'], pos_proposals, pos_proposals, './outputs/labeled_proposal_image.jpg')
+            visualize_labeled_box(self.img, gt_datas[index]['bboxs'], pos_proposals, neg_proposals[:50], './outputs/labeled_proposal_image.jpg')
 
         return detection_loss, results
 
@@ -85,7 +85,7 @@ class ROIHead(nn.Module):
     def get_top_detections(self, proposals, pred_scores, pred_deltas, images):
         img_size = (images[0].shape[1], images[0].shape[2])
         start_idx = 0
-
+        
         results = []
         for proposal in proposals:
             pred_score = pred_scores[start_idx : start_idx + len(proposal)]
@@ -107,6 +107,8 @@ class ROIHead(nn.Module):
                 # nms
                 keep = ops.nms(detections_i, pred_scores_i, self.nms_threshold)
 
+                if cfg.visualize:
+                    visualize_box(self.img, detections_i[keep], './outputs/debug.jpg')
                 result.append({
                         'label' : i,
                         'score' : pred_scores_i[keep],
@@ -141,9 +143,13 @@ class ROIHead(nn.Module):
             pred_delta = pred_deltas[start_idx : start_idx + interval]
             start_idx = start_idx + interval
 
+            # score matching
+            idxs = torch.where(gt_label >= 0)[0]
+            pos_score = pred_score[idxs]
+            pos_label = gt_label[idxs]
+
             # score loss function
-            #cls_loss = cls_loss + F.cross_entropy(pred_score, gt_label.long(), reduction="sum")
-            cls_loss = cls_loss + F.cross_entropy(pred_score, gt_label.long(), reduction="sum")
+            cls_loss = cls_loss + F.cross_entropy(pos_score, pos_label.long(), reduction="sum")
             
             # deltas matching
             idxs = torch.where(gt_label > 0)[0]
@@ -174,7 +180,7 @@ class ROIHead(nn.Module):
             visualize_labeled_box(self.img, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_proposal_image.jpg')
 
             scores, idx = d_pred_scores[:, 1].sort(descending=True)
-            scores, topk_idx = scores[:15], idx[:15]
+            scores, topk_idx = scores[:30], idx[:30]
             d_delta = d_pred_deltas[topk_idx]
             d_proposals = proposals[0][topk_idx]
 

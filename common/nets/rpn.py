@@ -180,8 +180,6 @@ class RPN(nn.Module):
             d_pred_scores = torch.cat(pred_scores[0], dim=0)
             d_pred_deltas = torch.cat(pred_deltas[0], dim=0)
 
-            d_match_gt_boxes = match_gt_boxes[0][idxs]
-            '''
             idxs = torch.where(anchor_labels[0] == 1)[0]
             pos_anchors = anchors[idxs]
             pos_deltas = d_pred_deltas[idxs]
@@ -189,9 +187,8 @@ class RPN(nn.Module):
 
             pos_proposal = Box.delta_to_pos(pos_anchors, pos_deltas)
             visualize_labeled_box(self.img, d_match_gt_boxes, pos_proposal, pos_proposal, './outputs/debug_anchor_image.jpg')
-            '''
-            
-            scores, idx = d_pred_scores.sort(descending=True)
+
+            scores, idx = torch.sort(d_pred_scores, dim=0, descending=True)
             scores, topk_idx = scores[:50], idx[:50]
             d_delta = d_pred_deltas[topk_idx]
             d_anchors = anchors[topk_idx]
@@ -241,7 +238,12 @@ class RPN(nn.Module):
             K = min(self.post_nms_topk, len(topk_idx))
             topk_idx = topk_idx[:K]
             
-            #proposal_scores = proposal_scores[topk_idx]
+            # reshuffling
+            '''
+            idx = torch.randperm(topk_idx.numel())
+            topk_idx = topk_idx[idx]
+            '''
+
             result_proposals.append(pred_proposals[topk_idx])
             
         if cfg.visualize:

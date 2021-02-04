@@ -86,21 +86,6 @@ class ROIAlign(nn.Module):
         interpolate_feature = wa*la + wb*lb + wc*lc + wd*ld
         return interpolate_feature
 
-    def calculate_sampling_idxs_2(self, proposal):
-        w_sampling_num = int(self.output_size[1] * 2)
-        h_sampling_num = int(self.output_size[0] * 2)
-
-        w_unit = (proposal[2] - proposal[0]) / w_sampling_num
-        h_unit = (proposal[3] - proposal[1]) / h_sampling_num
-
-        w_range = torch.arange(0, w_sampling_num).cuda() * w_unit + w_unit/2 + proposal[0]
-        h_range = torch.arange(0, h_sampling_num).cuda() * h_unit + h_unit/2 + proposal[1]
-
-        w_range = w_range.reshape(1, -1).repeat(h_sampling_num, 1)
-        h_range = h_range.reshape(-1, 1).repeat(1, w_sampling_num)
-
-        return w_range, h_range
-
     def calculate_sampling_idxs(self, proposal):
         w_stride = (proposal[2] - proposal[0]) / self.output_size[1]
         h_stride = (proposal[3] - proposal[1]) / self.output_size[0]
@@ -138,7 +123,7 @@ class ROIAlign(nn.Module):
             feature = features[spatial_level]
             spatial_scale = self.pooler_scales[spatial_level]
 
-            output_feature = ops.roi_align(feature.unsqueeze(0), [proposal.unsqueeze(0)], output_size=self.output_size, spatial_scale=spatial_scale)
+            output_feature = ops.roi_align(feature.unsqueeze(0), [proposal.unsqueeze(0)], output_size=self.output_size, spatial_scale=spatial_scale, sampling_ratio=2)
             output_features.append(output_feature)
 
         output_features = torch.cat(output_features, dim=0)

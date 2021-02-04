@@ -99,7 +99,7 @@ class COCOKeypointDataset(Dataset):
         gt_data = copy.deepcopy(raw_gt_data)
 
         raw_img = cv2.imread(os.path.join(self.root, img_path))
-        img, gt_data = self.preprocessing(raw_img, gt_data)
+        img, gt_data, img_size = self.preprocessing(raw_img, gt_data)
 
         return {
             'img_id' : img_id,
@@ -108,7 +108,7 @@ class COCOKeypointDataset(Dataset):
             'raw_gt_data' : raw_gt_data,
             'gt_data' : gt_data,
             'raw_img_size' : (raw_img.shape[0], raw_img.shape[1]),
-            'img_size' : (img.shape[1], img.shape[2])
+            'img_size' : (img_size[1], img_size[2])
         }
 
     def preprocessing(self, img, gt_data):
@@ -116,6 +116,7 @@ class COCOKeypointDataset(Dataset):
         img, scales = Img.resize_img(img, cfg.min_size, cfg.max_size)
         # normalize image
         img = Img.normalize_img(img, cfg.pixel_mean, cfg.pixel_std)
+        img_size = img.shape
         # padding image
         img = Img.padding_img(img, cfg.pad_unit)
 
@@ -123,7 +124,7 @@ class COCOKeypointDataset(Dataset):
         if self.is_train:
             gt_data['bboxs'] = Box.scale_box(gt_data['bboxs'], scales)
             gt_data['keypoints'] = Keypoint.scale_keypoint(gt_data['keypoints'], scales)
-        return img, gt_data
+        return img, gt_data, img_size
 
     def evaluate(self):
         results = self.db.loadRes(cfg.save_result_path)
@@ -131,7 +132,7 @@ class COCOKeypointDataset(Dataset):
         coco_eval = COCOeval(self.db, results, 'bbox')
         coco_eval.params.catIds = [1]
         coco_eval.params.imgIds = self.img_ids
-        
+
         coco_eval.evaluate()
         coco_eval.accumulate()
         coco_eval.summarize()

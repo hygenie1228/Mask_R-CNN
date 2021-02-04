@@ -14,9 +14,9 @@ class Logger:
     
     def log(self, proposal_loss, detection_loss, epoch, i, iters):
         self.proposal_cls = self.proposal_cls + proposal_loss[0].item()
-        self.proposal_loc = self.proposal_loc + proposal_loss[1].item()
+        self.proposal_loc = self.proposal_loc + proposal_loss[1].item() * cfg.pro_loc_lambda
         self.detection_cls = self.detection_cls + detection_loss[0].item()
-        self.detection_loc = self.detection_loc + detection_loss[1].item()
+        self.detection_loc = self.detection_loc + detection_loss[1].item() * cfg.det_loc_lambda
 
         if i % cfg.log_interval == (cfg.log_interval-1):
             self.writer.add_scalar('Train_Loss/proposal_cls', self.proposal_cls, iters)

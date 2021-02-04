@@ -53,15 +53,7 @@ class Box:
 
         return [xmin, ymin, xmax, ymax]
 
-    def xyxy_to_xywh(box):        
-        w = box[2] - box[0]
-        h = box[3] - box[1]
-        x = box[0] + w/2
-        y = box[1] + h/2
-        
-        return [x, y, w, h]
-
-    def xyxy_to_xywh2(box):
+    def xyxy_to_xywh(box):
         x = box[0]
         y = box[1]
         w = box[2] - box[0]

@@ -82,10 +82,10 @@ class MaskRCNN(nn.Module):
 
                 for score, bbox in zip(result_per_label['score'], result_per_label['bbox']):
                     final_results.append({
-                        'image_id' : image_id,
-                        'category_id' : category_id,
+                        'image_id' : int(image_id),
+                        'category_id' : int(category_id),
                         'bbox' : Box.xyxy_to_xywh(bbox.tolist()),
-                        'score' : score.tolist()
+                        'score' : round(score.tolist(),3)
                     })
 
         return final_results

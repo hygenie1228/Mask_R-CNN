@@ -21,12 +21,13 @@ def main():
     # restrict one gpu (not support distributed learning)
     cfg.set_args(args.gpu)
     cudnn.benchmark = True
-
+    cfg.batch_size = 1
+    
     # set tester
     tester = Tester()
     tester.build_dataloader()
     tester.load_model()
-    
+
     
 
     for data in tqdm(tester.dataloader):   
@@ -40,6 +41,7 @@ def main():
 
     tester.save_jsons()
     tester.evaluate()
+    
 
 if __name__ == "__main__":
     main()

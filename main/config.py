@@ -10,19 +10,22 @@ class Config:
     # Training Parameter
     save_checkpoint = True
     load_checkpoint = False
-    save_model_path = os.path.join(checkpoint_dir, 'final_epoch1_0201_sample.pth')
-    load_model_path = os.path.join(checkpoint_dir, 'final_epoch2_0131_scratch.pth')
+    save_model_path = os.path.join(checkpoint_dir, 'final_epoch5_0204.pth')
+    load_model_path = os.path.join(checkpoint_dir, 'final_epoch3_0203.pth')
+    visualize_switch = True
     visualize = False
 
     batch_size = 2
     num_worker = 1
-    shuffle = False
-    epoch = 1
-    lr = 0.001
+    shuffle = True
+    epoch = 5
+    lr = 0.002
     weight_decay = 0.0001
     momentum = 0.9
-    smooth_l1_beta = 1.0 
-    log_interval = 50
+    smooth_l1_beta = 1.0
+    pro_loc_lambda = 5.0 
+    det_loc_lambda = 10.0
+    log_interval = 100
 
     # Evaluate
     save_result_path = os.path.join(root_dir, 'outputs', 'results.json')
@@ -48,7 +51,7 @@ class Config:
     anchor_ratios = [0.5, 1.0, 2.0]
     negative_anchor_threshold = 0.3
     positive_anchor_threshold = 0.7
-    anchor_num_sample = 128
+    anchor_num_sample = 32
     anchor_positive_ratio = 0.5
 
     # RPN
@@ -61,12 +64,12 @@ class Config:
 
     # ROIHead
     num_labels = 1
-    roi_threshold = 0.5
+    roi_threshold = 0.7
     roi_num_sample = 128
     roi_positive_ratio = 0.25
 
-    roi_head_nms_threshold = 0.4
-    score_threshold = 0.7
+    roi_head_nms_threshold = 0.2
+    score_threshold = 0.6
 
     # ROIAlign
     output_size = (7, 7)
