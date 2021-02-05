@@ -19,11 +19,11 @@ class Config:
     num_worker = 1
     shuffle = True
     epoch = 5
-    lr = 0.002
+    lr = 0.001
     weight_decay = 0.0001
     momentum = 0.9
     smooth_l1_beta = 1.0
-    pro_loc_lambda = 5.0 
+    pro_loc_lambda = 10.0 
     det_loc_lambda = 10.0
     log_interval = 100
 
@@ -66,10 +66,10 @@ class Config:
     num_labels = 1
     roi_threshold = 0.7
     roi_num_sample = 128
-    roi_positive_ratio = 0.25
+    roi_positive_ratio = 0.5
 
     roi_head_nms_threshold = 0.2
-    score_threshold = 0.6
+    score_threshold = 0.7
 
     # ROIAlign
     output_size = (7, 7)

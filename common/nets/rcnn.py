@@ -27,7 +27,8 @@ class MaskRCNN(nn.Module):
         features = self.fpn(images)
         proposal_loss, proposals = self.rpn(features, images, gt_datas)
         detection_loss, results = self.roi_head(features, proposals, images, gt_datas)
-
+        #detection_loss = (torch.tensor([0.0]).cuda(), torch.tensor([0.0]).cuda())
+        
         if self.training:
             return proposal_loss, detection_loss
         else:

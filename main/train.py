@@ -47,6 +47,7 @@ def main():
             trainer.optimizer.step()
 
             logger.log(proposal_loss, detection_loss, epoch, i, epoch*len(trainer.dataloader)+i)
+            
             if cfg.visualize_switch:
                 if i % 500 == 0:
                     cfg.visualize = True

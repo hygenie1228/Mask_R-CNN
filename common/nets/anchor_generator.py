@@ -84,6 +84,28 @@ class AnchorGenerator:
         
         return labels, match_gt_boxes
     
+    def sampling_anchors2(self, input_labels):
+        # input_labels : [bs, N]
+        sampling_labels = torch.empty(input_labels.shape).cuda().fill_(-1)
+
+        for i, labels in enumerate(input_labels):
+            pos_index = torch.where(labels == 1)[0]
+            neg_index = torch.where(labels == 0)[0]
+            sampling_pos_num = min(pos_index.numel(), int(self.num_sample * self.positive_ratio))
+            sampling_neg_num = min(neg_index.numel(), int(self.num_sample * (1 - self.positive_ratio)))
+                
+            rand_idx = torch.randperm(pos_index.numel())[:sampling_pos_num]
+            pos_index = pos_index[rand_idx]
+            rand_idx = torch.randperm(neg_index.numel())[:sampling_neg_num]
+            neg_index = neg_index[rand_idx]
+
+            # reassign label
+            sampling_labels[i, pos_index] = 1
+            sampling_labels[i, neg_index] = 0
+
+        return sampling_labels
+
+
     def sampling_anchors(self, input_labels):
         # input_labels : [bs, N]
         sampling_labels = torch.empty(input_labels.shape).cuda().fill_(-1)
@@ -91,18 +113,9 @@ class AnchorGenerator:
         for i, labels in enumerate(input_labels):
             pos_index = torch.where(labels == 1)[0]
             neg_index = torch.where(labels == 0)[0]
-            sampling_pos_num = int(self.num_sample * self.positive_ratio)
-            sampling_neg_num = int(self.num_sample * (1 - self.positive_ratio))
+            sampling_pos_num = min(pos_index.numel(), int(self.num_sample * self.positive_ratio))
+            sampling_neg_num = min(neg_index.numel(), int(self.num_sample * (1 - self.positive_ratio)))
 
-            # calculate sampling number
-            if pos_index.numel() < sampling_pos_num:
-                sampling_pos_num = pos_index.numel()
-                sampling_neg_num = int(pos_index.numel() * (1 - self.positive_ratio) /  self.positive_ratio)
-
-            if neg_index.numel() < sampling_neg_num:
-                sampling_neg_num = neg_index.numel()
-                sampling_pos_num = int(neg_index.numel() * self.positive_ratio / (1 - self.positive_ratio)) 
-                
             rand_idx = torch.randperm(pos_index.numel())[:sampling_pos_num]
             pos_index = pos_index[rand_idx]
             rand_idx = torch.randperm(neg_index.numel())[:sampling_neg_num]

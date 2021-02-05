@@ -31,7 +31,7 @@ class ROIAlign(nn.Module):
         for features_i, proposals_i, spatial_levels_i in zip(reshape_features, proposals, spatial_levels):
             output_feature = self.extract_features(features_i, proposals_i, spatial_levels_i)
             #output_feature = self.extract_features_dense(features_i, proposals_i, spatial_levels_i)
-            output_feature = self.torchvision_roi_align(features_i, proposals_i, spatial_levels_i)
+            #output_feature = self.torchvision_roi_align(features_i, proposals_i, spatial_levels_i)
             extracted_feature.append(output_feature)
 
         extracted_feature = torch.cat(extracted_feature, dim=0)
@@ -63,8 +63,6 @@ class ROIAlign(nn.Module):
             output_feature = self.max_pooling(interpolate_feature)
             output_features[idxs,:,:,:] =  output_features[idxs,:,:,:] + output_feature
 
-            
-        #output_features = torch.cat(output_features, dim=0)
         return output_features
 
     def bilinear_interpolate(self, feature, x, y):
@@ -113,23 +111,6 @@ class ROIAlign(nn.Module):
 
         return w_range, h_range
 
-    def torchvision_roi_align(self, features, proposals, spatial_levels):
-        output_features = torch.zeros((len(proposals), 256, 7, 7)).cuda().detach()
-        for i, scale in enumerate(self.pooler_scales):
-            # get feature level
-            feature = features[i]
-            idxs = torch.where(spatial_levels == i)[0]
-            
-            if len(idxs) == 0:
-                continue
-            
-            # get proposal
-            proposal = proposals[idxs]
-
-            output_feature = ops.roi_align(feature.unsqueeze(0), [proposal], output_size=self.output_size, spatial_scale=scale, sampling_ratio=2)
-            output_features[idxs,:,:,:] =  output_features[idxs,:,:,:] + output_feature
-
-        return output_features
 
     def extract_features_dense(self, features, proposals, spatial_levels):
         output_features = []
@@ -212,4 +193,21 @@ class ROIAlign(nn.Module):
 
         return spatial_levels
 
+    def torchvision_roi_align(self, features, proposals, spatial_levels):
+        output_features = torch.zeros((len(proposals), 256, 7, 7)).cuda().detach()
+        for i, scale in enumerate(self.pooler_scales):
+            # get feature level
+            feature = features[i]
+            idxs = torch.where(spatial_levels == i)[0]
+            
+            if len(idxs) == 0:
+                continue
+            
+            # get proposal
+            proposal = proposals[idxs]
+
+            output_feature = ops.roi_align(feature.unsqueeze(0), [proposal], output_size=self.output_size, spatial_scale=scale, sampling_ratio=2)
+            output_features[idxs,:,:,:] =  output_features[idxs,:,:,:] + output_feature
+
+        return output_features
     

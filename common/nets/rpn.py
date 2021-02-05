@@ -174,6 +174,9 @@ class RPN(nn.Module):
         # normalizer
         cls_loss = cls_loss / (batch_size * self.anchor_samples)
         loc_loss = loc_loss / (batch_size * self.anchor_samples)
+
+        #cls_loss = cls_loss / (batch_size * len(gt_labels))
+        #loc_loss = loc_loss / (batch_size * len(gt_delta))
         
         # debug - visualize
         if cfg.visualize & self.training:
