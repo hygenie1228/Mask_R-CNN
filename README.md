@@ -669,6 +669,9 @@ Updates per week.
 - TODO  
   1) Code clean up     -  OK!
 
+
+  Read papers (8)  
+
   5 epoch training result  
 
   Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.380  
