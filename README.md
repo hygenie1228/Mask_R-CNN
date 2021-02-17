@@ -695,3 +695,10 @@ Updates per week.
   - Loss function  
   - 몇 알고리즘은 C에서 수행되어 확인 어려움  
     (i.g. torchvision ROIAlign 사용하니 mAP 0.015정도 차이)  
+
+
+  <img src="./assets/log_17.jpg" width="60%" > 
+
+  -> detectron2 코드에서 pretrained된 모델을 기반으로 학습한다.  (keypoint_rcnn_R_50_FPN_1x.yaml)  
+  하지만, pretrained model을 가져오지 않고 처음부터 학습할경우 발산하는 문제 발생(?)  
+  => 어떻게 train process가 되는지 확인하기 어려움  
