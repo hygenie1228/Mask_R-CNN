@@ -41,7 +41,7 @@ class Trainer:
         self.optimizer = torch.optim.SGD(params, momentum=cfg.momentum)
 
     def set_scheduler(self):
-        self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, milestones=[1], gamma=0.1)
+        self.scheduler = torch.optim.lr_scheduler.MultiStepLR(self.optimizer, milestones=[2], gamma=0.1)
 
     def save_model(self, epoch):
         torch.save({

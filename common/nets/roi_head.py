@@ -166,9 +166,6 @@ class ROIHead(nn.Module):
         cls_loss = cls_loss / (batch_size * self.num_sample)
         loc_loss = loc_loss / (batch_size * self.num_sample)
 
-        #cls_loss = cls_loss / batch_size
-        #loc_loss = loc_loss / batch_size
-
         if cfg.visualize & self.training:
             # for visualize - trianing
             d_pred_scores = pred_scores[:num_features[0]]

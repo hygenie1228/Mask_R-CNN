@@ -19,11 +19,12 @@ class Logger:
         self.detection_loc = self.detection_loc + detection_loss[1].item() * cfg.det_loc_lambda
 
         if i % cfg.log_interval == (cfg.log_interval-1):
+            '''
             self.writer.add_scalar('Train_Loss/proposal_cls', self.proposal_cls, iters)
             self.writer.add_scalar('Train_Loss/proposal_loc', self.proposal_loc, iters)
             self.writer.add_scalar('Train_Loss/detection_cls', self.detection_cls, iters)
             self.writer.add_scalar('Train_Loss/detection_loc', self.detection_loc, iters)
-            
+            '''
 
             print("Epoch: %d /  Iter : %d /  Pro cls : %f \t/  Pro loc : %f \t/  Det cls : %f \t/  Det loc : %f \t/  Time : %f " \
                     %(epoch, i, self.proposal_cls, self.proposal_loc, self.detection_cls, self.detection_loc, time.time() - self.start_time))

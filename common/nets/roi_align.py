@@ -39,7 +39,7 @@ class ROIAlign(nn.Module):
         return extracted_feature
     
     def extract_features(self, features, proposals, spatial_levels):
-        output_features = torch.zeros((len(proposals), 256, 7, 7)).cuda().detach()
+        output_features = torch.zeros((len(proposals), 256, 7, 7)).cuda()
 
         for i, scale in enumerate(self.pooler_scales):
             # get feature level
@@ -194,7 +194,7 @@ class ROIAlign(nn.Module):
         return spatial_levels
 
     def torchvision_roi_align(self, features, proposals, spatial_levels):
-        output_features = torch.zeros((len(proposals), 256, 7, 7)).cuda().detach()
+        output_features = torch.zeros((len(proposals), 256, 7, 7)).cuda()
         for i, scale in enumerate(self.pooler_scales):
             # get feature level
             feature = features[i]

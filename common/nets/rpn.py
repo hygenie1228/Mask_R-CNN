@@ -174,9 +174,6 @@ class RPN(nn.Module):
         # normalizer
         cls_loss = cls_loss / (batch_size * self.anchor_samples)
         loc_loss = loc_loss / (batch_size * self.anchor_samples)
-
-        #cls_loss = cls_loss / (batch_size * len(gt_labels))
-        #loc_loss = loc_loss / (batch_size * len(gt_delta))
         
         # debug - visualize
         if cfg.visualize & self.training:
@@ -241,12 +238,6 @@ class RPN(nn.Module):
             K = min(self.post_nms_topk, len(topk_idx))
             topk_idx = topk_idx[:K]
             
-            # reshuffling
-            '''
-            idx = torch.randperm(topk_idx.numel())
-            topk_idx = topk_idx[idx]
-            '''
-
             result_proposals.append(pred_proposals[topk_idx])
             
         if cfg.visualize:

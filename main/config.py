@@ -10,8 +10,8 @@ class Config:
     # Training Parameter
     save_checkpoint = True
     load_checkpoint = False
-    save_model_path = os.path.join(checkpoint_dir, 'final_epoch5_0204.pth')
-    load_model_path = os.path.join(checkpoint_dir, 'final_epoch3_0203.pth')
+    save_model_path = os.path.join(checkpoint_dir, 'final_epoch5_0213.pth')
+    load_model_path = os.path.join(checkpoint_dir, 'final_epoch5_0213.pth')
     visualize_switch = True
     visualize = False
 
@@ -20,10 +20,10 @@ class Config:
     shuffle = True
     epoch = 5
     lr = 0.001
-    weight_decay = 0.0001
+    weight_decay = 0.0002
     momentum = 0.9
     smooth_l1_beta = 1.0
-    pro_loc_lambda = 10.0 
+    pro_loc_lambda = 2.0 
     det_loc_lambda = 10.0
     log_interval = 100
 
@@ -68,8 +68,8 @@ class Config:
     roi_num_sample = 128
     roi_positive_ratio = 0.5
 
-    roi_head_nms_threshold = 0.2
-    score_threshold = 0.7
+    roi_head_nms_threshold = 0.5
+    score_threshold = 0.9
 
     # ROIAlign
     output_size = (7, 7)

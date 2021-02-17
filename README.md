@@ -667,6 +667,28 @@ Updates per week.
 
 # Week5  
 - TODO  
-  1) Code clean up    
-  2) Train network at various parameters  
-  3) What to do?  
+  1) Code clean up     -  OK!
+
+  5 epoch training result  
+
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.380  
+  Average Precision  (AP) @[ IoU=0.50      | area=   all | maxDets=100 ] = 0.699  
+  Average Precision  (AP) @[ IoU=0.75      | area=   all | maxDets=100 ] = 0.375  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.264  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.449  
+  Average Precision  (AP) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.483   
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=  1 ] = 0.148  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets= 10 ] = 0.433  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.488  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area= small | maxDets=100 ] = 0.335  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area=medium | maxDets=100 ] = 0.563  
+  Average Recall     (AR) @[ IoU=0.50:0.95 | area= large | maxDets=100 ] = 0.627    
+
+
+  Detectron 과 다른점  
+  - Dataloader preprocessing   
+  - Several hyper parameter  
+  - Sampling process
+  - Loss function  
+  - 몇 알고리즘은 C에서 수행되어 확인 어려움  
+    (i.g. torchvision ROIAlign 사용하니 mAP 0.015정도 차이)  

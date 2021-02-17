@@ -15,9 +15,6 @@ class MaskRCNN(nn.Module):
         self.fpn = FPN()
         self.rpn = RPN()
         self.roi_head = ROIHead()
-
-        #if cfg.fpn_pretrained:
-        #    backbone = resnet_fpn_backbone('resnet50', pretrained=True, trainable_layers=3)
         
     def forward(self, datas):
         # compose batch

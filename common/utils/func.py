@@ -185,18 +185,6 @@ class Box:
         boxes[:, 2].clamp_(min=0, max=W)
         boxes[:, 3].clamp_(min=0, max=H)
 
-        # removal
-        '''
-        idxs = torch.where((boxes[:, 0] >= 0) & (boxes[:, 0] <= W))[0]
-        scores, boxes = scores[idxs], boxes[idxs]
-        idxs = torch.where((boxes[:, 1] >= 0) & (boxes[:, 1] <= H))[0]
-        scores, boxes = scores[idxs], boxes[idxs]
-        idxs = torch.where((boxes[:, 2] >= 0) & (boxes[:, 2] <= W))[0]
-        scores, boxes = scores[idxs], boxes[idxs]
-        idxs = torch.where((boxes[:, 3] >= 0) & (boxes[:, 3] <= H))[0]
-        scores, boxes = scores[idxs], boxes[idxs]
-        '''
-        
         # area check
         mask = ((boxes[:, 2] - boxes[:, 0]) > 0) & ((boxes[:, 3] - boxes[:, 1]) > 0)
         scores, boxes = scores[mask], boxes[mask]
