@@ -669,6 +669,7 @@ Updates per week.
 - TODO  
   1) Code clean up     -  OK!
 
+
   Read papers (8)  
 
   5 epoch training result  
@@ -692,6 +693,13 @@ Updates per week.
   - Several hyper parameter  
   - Sampling process
   - Loss function  
-  - Learing rate scheduling
+  - Learning rate scheduling
   - 몇 알고리즘은 C에서 수행되어 확인 어려움  
     (i.g. torchvision ROIAlign 사용하니 mAP 0.015정도 차이)  
+
+
+  detectron2 코드에서 pretrained된 모델을 기반으로 학습함.  (keypoint_rcnn_R_50_FPN_1x.yaml)   
+  detectron2에서도 learning rate 기본값으로 설정하고 학습하니깐 발산하는 문제 발생   
+  -> 어떻게 train process가 되는지 확인하기 어려움  
+  -> 직접 learning rate와 같은 hyper parmeter를 설정해줘야함  
+   
