@@ -703,3 +703,6 @@ Updates per week.
   -> 어떻게 train process가 되는지 확인하기 어려움  
   -> 직접 learning rate와 같은 hyper parmeter를 설정해줘야함  
    
+  detectron2 를 learning rate 0.001로해서 학습 시켰더니   
+  AP 22.201이 나옴    
+  -> detectron2를 tuning해야하는 상황(?!?)  
