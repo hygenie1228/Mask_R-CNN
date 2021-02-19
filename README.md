@@ -706,3 +706,7 @@ Updates per week.
   detectron2 를 learning rate 0.001로해서 학습 시켰더니   
   AP 22.201이 나옴    
   -> detectron2를 tuning해야하는 상황(?!?)  
+
+
+  # Week6
+- TODO  
