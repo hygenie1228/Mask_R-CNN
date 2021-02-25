@@ -9,22 +9,22 @@ class Config:
     
     # Training Parameter
     save_checkpoint = True
-    load_checkpoint = False
-    save_model_path = os.path.join(checkpoint_dir, 'final_epoch5_0213.pth')
-    load_model_path = os.path.join(checkpoint_dir, 'final_epoch5_0213.pth')
+    load_checkpoint = True
+    save_model_path = os.path.join(checkpoint_dir, 'final_epoch8_0226.pth')
+    load_model_path = os.path.join(checkpoint_dir, 'final_epoch5_0204.pth')
     visualize_switch = True
     visualize = False
 
     batch_size = 2
     num_worker = 1
     shuffle = True
-    epoch = 5
-    lr = 0.001
-    weight_decay = 0.0002
+    epoch = 8
+    lr = 0.002
+    weight_decay = 0.0001
     momentum = 0.9
     smooth_l1_beta = 1.0
-    pro_loc_lambda = 2.0 
-    det_loc_lambda = 10.0
+    pro_loc_lambda = 50.0 
+    det_loc_lambda = 50.0
     log_interval = 100
 
     # Evaluate
@@ -64,14 +64,14 @@ class Config:
 
     # ROIHead
     num_labels = 1
-    roi_threshold = 0.7
+    roi_threshold = 0.5
     roi_num_sample = 128
     roi_positive_ratio = 0.5
 
     roi_head_nms_threshold = 0.5
-    score_threshold = 0.9
+    score_threshold = 0.05
 
-    # ROIAlign
+    # ROIAlign 
     output_size = (7, 7)
     roi_features = ['p2', 'p3', 'p4', 'p5']
     pooler_scales = [0.25, 0.125, 0.0625, 0.03125]
