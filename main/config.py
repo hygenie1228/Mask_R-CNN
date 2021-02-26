@@ -11,7 +11,7 @@ class Config:
     save_checkpoint = True
     load_checkpoint = True
     save_model_path = os.path.join(checkpoint_dir, 'final_epoch8_0226.pth')
-    load_model_path = os.path.join(checkpoint_dir, 'final_epoch5_0204.pth')
+    load_model_path = os.path.join(checkpoint_dir, 'final_epoch8_0226.pth')
     visualize_switch = True
     visualize = False
 
@@ -69,7 +69,7 @@ class Config:
     roi_positive_ratio = 0.5
 
     roi_head_nms_threshold = 0.5
-    score_threshold = 0.05
+    score_threshold = 0.0
 
     # ROIAlign 
     output_size = (7, 7)
