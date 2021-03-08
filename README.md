@@ -12,12 +12,12 @@ Updates per week.
 ```
 data
 |-- COCO
-|   |-- dataset
-|   |   |-- annotations
-|   |   |-- train2017
-|   |   |-- val2017
-|   |   |-- test2017
-|   |-- dataset.py
+|-- |-- dataset
+|-- |-- |-- annotations
+|-- |-- |-- train2017
+|-- |-- |-- val2017
+|-- |-- |-- test2017
+|-- |-- dataset.py
 |-- dataset.py
 ```
 
@@ -27,8 +27,31 @@ outputs
 |-- results.json
 ```
 
+# Run  
+  
+### Train
+```
+cd ${ROOT}
+python ./main/train.py --gpu 0
+```
 
-# Week0
+### Test
+'''
+cd ${ROOT}
+python ./main/test.py --gpu 0
+'''
+
+# Result
+
+|  AP   | AP50  | AP75  |  APs  |  APm  |  APl  | 
+|-------|-------|-------|-------|-------|-------|
+| 0.423 | 0.767 | 0.417 | 0.303 | 0.487 | 0.527 |
+
+
+# Log 
+
+
+### Week0
  * **read papers :**    
   
   [1] Ren, Shaoqing, et al. "Faster r-cnn: Towards real-time object detection with region proposal networks." IEEE transactions on pattern analysis and machine intelligence 39.6 (2016): 1137-1149.  
@@ -42,7 +65,7 @@ outputs
   use only one gpu (not support distributed learning)   
    
   
-# Week1
+### Week1
 *  **model**  
   
   ```
@@ -407,7 +430,7 @@ outputs
   3) compose train dataset : remove data not include person?
 
   
-# Week2
+### Week2
 - TODO  
   1) remove non human class image       - OK!
   2) construct loss function            - OK!
@@ -481,7 +504,7 @@ outputs
   2) how to debug network? debug priority?
 
 
-# Week3
+### Week3
 - TODO  
   1) set batch size = 2                           - OK!
   2) training RPN network at various parameters   - OK!
@@ -590,7 +613,7 @@ outputs
     -> 평가지표를 통해 성능 측정함으로써 확인해봐야할듯
     
 
-# Week4
+### Week4
 - TODO  
   1) Implement Evaluation code.
   2) Speed up network
@@ -687,7 +710,7 @@ outputs
   : learning rate?, loss function?, arch design?, other parameter...?  
 
 
-# Week5  
+### Week5  
 - TODO  
   1) Code clean up     -  OK!
 
@@ -730,8 +753,8 @@ outputs
   -> detectron2를 tuning해야하는 상황(?!?)  
 
 
-  # Week6
-- TODO  
+### Week6  
+Fine tune model  
 
 
  Average Precision  (AP) @[ IoU=0.50:0.95 | area=   all | maxDets=100 ] = 0.423  
