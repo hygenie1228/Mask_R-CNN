@@ -55,7 +55,7 @@ python ./main/test.py --gpu 0
 
 Below is a log of programming in progress for 6 weeks.  
 
-___
+---
 ### Week0
  * **read papers :**    
   
@@ -69,7 +69,7 @@ ___
   
   use only one gpu (not support distributed learning)   
    
-  
+---
 ### Week1
 *  **model**  
   
@@ -434,7 +434,7 @@ ___
   2) compare with pretrained FPN?  
   3) compose train dataset : remove data not include person?
 
-  
+---  
 ### Week2
 - TODO  
   1) remove non human class image       - OK!
@@ -508,7 +508,7 @@ ___
   1) how to set learning rate scheduler
   2) how to debug network? debug priority?
 
-
+---
 ### Week3
 - TODO  
   1) set batch size = 2                           - OK!
@@ -617,7 +617,7 @@ ___
     -> RoI align이 잘되는 건지, 아니면 잘못된 RoI align layer가 출력하는 패턴을 보고 classifier가 분류하는건지,
     -> 평가지표를 통해 성능 측정함으로써 확인해봐야할듯
     
-
+---
 ### Week4
 - TODO  
   1) Implement Evaluation code.
@@ -714,7 +714,7 @@ ___
   1) 모델 성능 높이기 위한 우선 순위  
   : learning rate?, loss function?, arch design?, other parameter...?  
 
-
+---
 ### Week5  
 - TODO  
   1) Code clean up     -  OK!
@@ -757,7 +757,7 @@ ___
   AP 22.201이 나옴    
   -> detectron2를 tuning해야하는 상황(?!?)  
 
-
+---
 ### Week6  
 Fine tune model  
 
