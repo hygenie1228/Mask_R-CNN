@@ -82,7 +82,7 @@ class Tester:
         self.model = MaskRCNN()
         self.model.cuda()
         self.model.eval()
-
+        print(cfg.load_model_path)
         checkpoint = torch.load(cfg.load_model_path)
         self.model.load_state_dict(checkpoint['model_state_dict'])
         print(self.model)    

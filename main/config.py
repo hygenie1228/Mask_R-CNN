@@ -10,21 +10,21 @@ class Config:
     # Training Parameter
     save_checkpoint = True
     load_checkpoint = True
-    save_model_path = os.path.join(checkpoint_dir, 'final_epoch8_0226.pth')
-    load_model_path = os.path.join(checkpoint_dir, 'final_epoch8_0226.pth')
+    save_model_path = os.path.join(checkpoint_dir, 'final_epoch10_0302.pth')
+    load_model_path = os.path.join(checkpoint_dir, 'final_epoch5_0204.pth')
     visualize_switch = True
     visualize = False
 
     batch_size = 2
     num_worker = 1
     shuffle = True
-    epoch = 8
-    lr = 0.002
+    epoch = 10
+    lr = 0.0005
     weight_decay = 0.0001
     momentum = 0.9
     smooth_l1_beta = 1.0
-    pro_loc_lambda = 50.0 
-    det_loc_lambda = 50.0
+    pro_loc_lambda = 10.0 
+    det_loc_lambda = 10.0
     log_interval = 100
 
     # Evaluate
