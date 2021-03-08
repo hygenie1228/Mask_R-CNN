@@ -5,7 +5,29 @@ Pytorch Implementation of Mask R-CNN
 This code is an exercise code based on Mask R-CNN released in 2018.  
 It was implemented for programming pracitice as part of CV Lab's freshman trianing.  
 Updates per week.  
+
+# Directory  
   
+### Data
+```
+data
+|-- COCO
+|   |-- dataset
+|   |   |-- annotations
+|   |   |-- train2017
+|   |   |-- val2017
+|   |   |-- test2017
+|   |-- dataset.py
+|-- dataset.py
+```
+
+### Output  
+```
+outputs
+|-- results.json
+```
+
+
 # Week0
  * **read papers :**    
   
