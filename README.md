@@ -6,7 +6,7 @@ This code is an exercise code based on Mask R-CNN released in 2018.
 It was implemented for programming pracitice as part of CV Lab's freshman trianing.  
 Updates per week.  
 
-# Directory  
+## Directory  
   
 ### Data
 ```
@@ -27,7 +27,7 @@ outputs
 |-- results.json
 ```
 
-# Run  
+## Run  
   
 ### Train
 ```
@@ -36,20 +36,24 @@ python ./main/train.py --gpu 0
 ```
 
 ### Test
-'''
+```
 cd ${ROOT}
 python ./main/test.py --gpu 0
-'''
+```
 
-# Result
+## Result  
+  
+
+#### For MSCOCO Human Detection  
 
 |  AP   | AP50  | AP75  |  APs  |  APm  |  APl  | 
 |-------|-------|-------|-------|-------|-------|
 | 0.423 | 0.767 | 0.417 | 0.303 | 0.487 | 0.527 |
 
 
-# Log 
+## Log 
 
+Below is a log of programming in progress for 6 weeks.  
 
 ### Week0
  * **read papers :**    
